@@ -1,0 +1,574 @@
+<title>OLED Gift Box</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column workshop sheet; 3D viewer first, then numbers, wiring, fit proof, build steps */
+:root{
+  --bg:#f3f4f8; --panel:#ffffff; --ink:#18203a; --muted:#5b6380; --line:#dfe2ec;
+  --accent:#6a4fd8; --accent-soft:#ece7ff; --pixel:#1ba3c6;
+  --ok:#1f8a57; --ok-soft:#e3f4ea; --warn:#b26a00; --warn-soft:#fff1dc; --bad:#c23a3a;
+  --viewer:#e9ebf3;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12141d; --panel:#1a1d29; --ink:#e7e9f3; --muted:#a2a8c3; --line:#2c3044;
+  --accent:#a995ff; --accent-soft:#2a2547; --pixel:#5fd4f0;
+  --ok:#55c98f; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --bad:#ff7d7d;
+  --viewer:#1f2232; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12141d; --panel:#1a1d29; --ink:#e7e9f3; --muted:#a2a8c3; --line:#2c3044;
+  --accent:#a995ff; --accent-soft:#2a2547; --pixel:#5fd4f0;
+  --ok:#55c98f; --ok-soft:#173326; --warn:#f0b35a; --warn-soft:#3a2a12; --bad:#ff7d7d;
+  --viewer:#1f2232; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+main{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0;max-width:65ch}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header{display:flex;flex-direction:column;gap:10px}
+.specs{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--f-mono);font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.tag b{font-weight:500;color:var(--accent)}
+section{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+/* viewer */
+.viewer-wrap{position:relative;border-radius:14px;overflow:hidden;background:var(--viewer);border:1px solid var(--line)}
+#view{display:block;width:100%;height:min(64vh,540px);touch-action:none}
+#pick{position:absolute;left:10px;top:10px;max-width:calc(100% - 20px);background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:8px 10px;font-size:.85rem;pointer-events:none}
+#pick b{font-family:var(--f-display)}
+#loading{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);color:var(--muted)}
+.hint{position:absolute;right:10px;bottom:8px;font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.controls{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row > .lbl{font-family:var(--f-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);min-width:76px}
+button.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  padding:6px 12px;border-radius:999px;cursor:pointer}
+button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.chip:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.swatch[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--panel) inset}
+#stepText{font-size:.9rem;min-height:3em}
+/* verdict */
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.v{border-radius:12px;padding:12px;background:var(--ok-soft);display:flex;flex-direction:column;gap:2px}
+.v .n{font-family:var(--f-display);font-size:1.5rem;font-weight:700;color:var(--ok)}
+.v.warn{background:var(--warn-soft)} .v.warn .n{color:var(--warn)}
+.v span{font-size:.85rem}
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-weight:500;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:.72rem;padding:2px 8px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+/* battery calc */
+.calc{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px}
+@media (max-width:640px){.calc{grid-template-columns:minmax(0,1fr)}}
+.calc > *{min-width:0}
+select{max-width:100%;width:100%}
+[hidden]{display:none!important}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.85rem;display:flex;justify-content:space-between;gap:8px}
+.field label output{font-family:var(--f-mono)}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.big{font-family:var(--f-display);font-size:3rem;font-weight:700;line-height:1;color:var(--accent)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line)}
+.bar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--c)}
+/* lists */
+ol.steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:8px}
+ol.steps li{padding-left:4px}
+ul.clean{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.note{font-size:.88rem;color:var(--muted)}
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 10px 10px 0;font-size:.9rem}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two > *{min-width:0}
+svg text{font-family:var(--f-mono)}
+.diagram{overflow-x:auto}
+.diagram svg{min-width:620px;width:100%;height:auto}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<main>
+<header>
+  <span class="eyebrow">Birthday build · ESP32-C3 SuperMini + 2.42″ OLED</span>
+  <h1>OLED Gift Box</h1>
+  <p>A pocket-sized desk keepsake that plays animations on a 128×64 display. It runs from its USB-C port or from its own battery, and charges safely when plugged in. Everything below is generated from the same model that the printable files come from.</p>
+  <div class="specs">
+    <span class="tag">Outside <b>66.1 × 44.1 × 19.4 mm</b></span>
+    <span class="tag">Battery <b>≈ 400 mAh</b></span>
+    <span class="tag">Runtime <b id="headHours">≈ 9 h</b></span>
+    <span class="tag">Screws <b>4 × M2×12</b></span>
+  </div>
+</header>
+
+<section aria-labelledby="h3d">
+  <h2 id="h3d">Look inside</h2>
+  <div class="viewer-wrap">
+    <canvas id="view" aria-label="Interactive 3D model of the case and components"></canvas>
+    <div id="pick" hidden></div>
+    <div id="loading">loading 3D model…</div>
+    <div class="hint">drag to rotate · pinch to zoom · tap a part</div>
+  </div>
+  <div class="panel controls">
+    <div class="row"><span class="lbl">View</span>
+      <button class="chip" id="vAssembled" aria-pressed="true">Assembled</button>
+      <button class="chip" id="vXray" aria-pressed="false">X-ray case</button>
+      <button class="chip" id="vNoLid" aria-pressed="false">Hide lid</button>
+      <button class="chip" id="vSnaps" aria-pressed="false">Show snap clips</button>
+      <button class="chip" id="vReset">Reset camera</button>
+    </div>
+    <div class="row"><span class="lbl">Explode</span><input type="range" id="explode" min="0" max="100" value="0" aria-label="Explode distance"></div>
+    <div class="row"><span class="lbl">Cut</span>
+      <button class="chip" data-cut="off" aria-pressed="true">Off</button>
+      <button class="chip" data-cut="x" aria-pressed="false">Across</button>
+      <button class="chip" data-cut="y" aria-pressed="false">Lengthwise</button>
+      <button class="chip" data-cut="z" aria-pressed="false">Top-down</button>
+      <input type="range" id="cutPos" min="0" max="100" value="45" aria-label="Cut position" disabled>
+      <span class="mono note" id="cutLbl"></span>
+    </div>
+    <div class="row"><span class="lbl">Case colour</span>
+      <button class="swatch" data-col="#b9a4e8" style="background:#b9a4e8" aria-label="Lilac" aria-pressed="true"></button>
+      <button class="swatch" data-col="#f2f2ee" style="background:#f2f2ee" aria-label="White" aria-pressed="false"></button>
+      <button class="swatch" data-col="#2b2d33" style="background:#2b2d33" aria-label="Black" aria-pressed="false"></button>
+      <button class="swatch" data-col="#8fd3c1" style="background:#8fd3c1" aria-label="Mint" aria-pressed="false"></button>
+      <button class="swatch" data-col="#f4a6b7" style="background:#f4a6b7" aria-label="Pink" aria-pressed="false"></button>
+    </div>
+    <div class="row"><span class="lbl">Parts</span><div class="row" id="partChips"></div></div>
+    <div class="row"><span class="lbl">Build</span>
+      <button class="chip" id="stepPrev" aria-label="Previous step">◀</button>
+      <input type="range" id="step" min="0" max="11" value="11" aria-label="Assembly step">
+      <button class="chip" id="stepNext" aria-label="Next step">▶</button>
+      <button class="chip" id="stepPlay">Play build</button>
+    </div>
+    <div id="stepText" class="note"></div>
+  </div>
+</section>
+
+<section aria-labelledby="hfit">
+  <h2 id="hfit">Does it fit? The checks</h2>
+  <p class="note">A script loaded every component as a real 3D body and checked it against the case and every other part. It also moved each part along the path your hands will take during assembly.</p>
+  <div class="verdict" id="verdict"></div>
+  <div class="panel">
+    <h3>How far each part can move once assembled</h3>
+    <p class="note" style="margin-top:4px">Measured in 0.05 mm steps in every direction until it touches something. 0 means it is pressed against something in that direction.</p>
+    <div class="tbl" style="margin-top:10px"><table id="playTbl"><thead><tr><th>Part</th><th>Held by</th><th>Max wiggle</th><th></th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="callout"><b>Measure before printing.</b> The model uses published sizes: 61.5 × 39.5 mm for the OLED board, holes 2 mm in from each edge, and 22.5 × 18 mm for the SuperMini. Cheap OLED clones vary by vendor. Print <span class="mono">test_fit.stl</span> first (about 10 min, 2 g of plastic). Lay your OLED on its 4 pins and push a USB-C cable through the wall sample. If anything is off, send me your measurements and I'll regenerate the case.</div>
+</section>
+
+<section aria-labelledby="hbat">
+  <h2 id="hbat">Power and battery life</h2>
+  <div class="panel calc">
+    <div class="controls">
+      <div class="field"><label for="lit">Pixels lit on average <output id="litO"></output></label><input type="range" id="lit" min="3" max="60" value="15"></div>
+      <div class="field"><label for="con">OLED brightness (contrast) <output id="conO"></output></label><input type="range" id="con" min="10" max="100" value="50"></div>
+      <div class="field"><label for="cpu">Processor mode</label>
+        <select id="cpu">
+          <option value="8">Sleeps between frames (best)</option>
+          <option value="22" selected>Runs 80 MHz non-stop</option>
+          <option value="28">Runs 160 MHz non-stop</option>
+        </select></div>
+      <div class="field"><label for="cap">Battery</label>
+        <select id="cap">
+          <option value="400" selected>502535 · 400 mAh (fits this case)</option>
+          <option value="1000">603450 · 1000 mAh (case +3 mm thicker, longer)</option>
+        </select></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="eyebrow">On battery</span>
+      <div><span class="big mono" id="hours">–</span> <span class="note">hours of animation</span></div>
+      <div class="note mono" id="draw"></div>
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+      <p class="note">On USB the box runs indefinitely. A full charge takes about <b id="chg">1.9 h</b>, at 250 mA.</p>
+    </div>
+  </div>
+  <div class="tbl panel"><table>
+    <thead><tr><th>Consumer</th><th>Current</th><th>Where the number comes from</th></tr></thead>
+    <tbody>
+      <tr><td>ESP32-C3, WiFi/Bluetooth off</td><td class="num">22 mA @80 MHz<br>28 mA @160 MHz</td><td>Modem-sleep figures (<a href="https://docs.deneyapkart.org/en/Cards/Deneyap-Kart-G/Power-Consumption-esp32-c3.md" target="_blank" rel="noopener">Deneyap measurements</a>). A community bench test gives 22.6 mA at 80 MHz. Sleeping between frames is an estimate.</td></tr>
+      <tr><td>2.42″ OLED panel</td><td class="num">≈ 3 mA idle<br>+ up to ≈ 180 mA all-white</td><td>The panel datasheet gives 18 mA at 13 V for 50 % of pixels on. Its on-board boost converter draws roughly 90 mA from 3.3 V for that. The current grows with the number of lit pixels and with brightness.</td></tr>
+      <tr><td>Regulator, divider, leakage</td><td class="num">≈ 0.5 mA</td><td>Remove the SuperMini's red power LED, which saves about 2–3 mA.</td></tr>
+      <tr><td>Usable battery</td><td class="num">≈ 88 %</td><td>The firmware stops at 3.4 V. The diode and regulator need some headroom, and this also protects the cell.</td></tr>
+    </tbody></table></div>
+  <p class="note">The OLED is the biggest consumer. Dark backgrounds with thin lines and a medium brightness can easily double the runtime. Another option is a sleep mode that wakes on a button press. In deep sleep the box draws about 0.05 mA, so a charge then lasts for months.</p>
+</section>
+
+<section aria-labelledby="hwire">
+  <h2 id="hwire">Wiring</h2>
+  <div class="panel">
+    <h3>Power: one USB-C port does everything</h3>
+    <p class="note" style="margin-top:4px">USB-C goes into the SuperMini. Its 5 V pin feeds the charger and the regulator. The battery joins through a diode, so it only takes over when USB is unplugged. While plugged in, the battery just charges, and the charger stops at 4.2 V. The battery is not discharged and recharged over and over.</p>
+    <div class="diagram" style="margin-top:12px">
+    <svg viewBox="0 0 640 250" role="img" aria-label="Power wiring diagram">
+      <defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker></defs>
+      <g fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4">
+        <rect x="10" y="20" width="150" height="120" rx="8"/>
+        <rect x="230" y="20" width="160" height="90" rx="8"/>
+        <rect x="470" y="20" width="150" height="60" rx="8"/>
+        <rect x="230" y="160" width="80" height="44" rx="6"/>
+        <rect x="350" y="160" width="70" height="44" rx="6"/>
+        <rect x="470" y="150" width="150" height="80" rx="8"/>
+      </g>
+      <g fill="var(--ink)" font-size="12">
+        <text x="20" y="40" font-weight="600">ESP32-C3 SuperMini</text>
+        <text x="20" y="62" fill="var(--muted)">USB-C ◀ cable</text>
+        <text x="20" y="88">5V pin</text><text x="20" y="108">GND</text><text x="20" y="128">GPIO3 (ADC)</text>
+        <text x="240" y="40" font-weight="600">TP4056 + DW01</text>
+        <text x="240" y="60">IN+  IN−</text><text x="240" y="80">B+   B−</text><text x="240" y="100">OUT+ OUT−</text>
+        <text x="480" y="42" font-weight="600">LiPo 502535</text><text x="480" y="62" fill="var(--muted)">3.7 V · 400 mAh</text>
+        <text x="240" y="180" font-weight="600">Slide sw.</text><text x="240" y="196" fill="var(--muted)">ON/OFF</text>
+        <text x="360" y="180" font-weight="600">SS14</text><text x="360" y="196" fill="var(--muted)">diode</text>
+        <text x="480" y="170" font-weight="600">Divider</text><text x="480" y="188" fill="var(--muted)">100k / 100k</text><text x="480" y="206" fill="var(--muted)">→ GPIO3 reads</text><text x="480" y="222" fill="var(--muted)">battery voltage</text>
+      </g>
+      <g fill="none" stroke-width="2">
+        <path d="M160 84 H200 V56 H230" stroke="#d9534f"/>
+        <path d="M160 104 H210 V64 H230" stroke="var(--ink)"/>
+        <path d="M390 76 H430 V46 H470" stroke="#d9534f"/>
+        <path d="M390 84 H440 V62 H470" stroke="var(--ink)"/>
+        <path d="M390 96 H450 V140 H270 V160" stroke="#e08a2c"/>
+        <path d="M310 182 H350" stroke="#e08a2c"/>
+        <path d="M385 204 V230 H180 V90 H160" stroke="#d9534f" marker-end="url(#arr)"/>
+        <path d="M325 182 V145 H545 V150" stroke="#e08a2c" stroke-dasharray="4 3"/>
+        <path d="M470 220 H440 V236 H190 V124 H160" stroke="var(--pixel)" stroke-dasharray="4 3"/>
+      </g>
+      <g font-size="10" fill="var(--muted)">
+        <text x="168" y="78">5 V in</text><text x="398" y="70">charge</text><text x="200" y="244">battery → 5V pin (only when USB unplugged)</text>
+      </g>
+    </svg>
+    </div>
+  </div>
+  <div class="two">
+    <div class="panel tbl"><h3>OLED (7-pin SPI) → SuperMini</h3><table style="margin-top:8px">
+      <thead><tr><th>OLED</th><th>SuperMini</th></tr></thead><tbody>
+      <tr><td>GND</td><td class="num">GND</td></tr><tr><td>VCC</td><td class="num">3V3</td></tr>
+      <tr><td>SCL / SCK</td><td class="num">GPIO4</td></tr><tr><td>SDA / MOSI</td><td class="num">GPIO6</td></tr>
+      <tr><td>RES</td><td class="num">GPIO10</td></tr><tr><td>DC</td><td class="num">GPIO5</td></tr><tr><td>CS</td><td class="num">GPIO7</td></tr>
+      </tbody></table></div>
+    <div class="panel tbl"><h3>Buttons and sensing</h3><table style="margin-top:8px">
+      <thead><tr><th>From</th><th>To</th></tr></thead><tbody>
+      <tr><td>Button A</td><td class="num">GPIO0 ↔ GND</td></tr><tr><td>Button B</td><td class="num">GPIO1 ↔ GND</td></tr>
+      <tr><td>Divider middle</td><td class="num">GPIO3</td></tr>
+      <tr><td colspan="2" class="note">Both buttons use the internal pull-ups. GPIO0 and GPIO1 can wake the chip from deep sleep. The pins the chip checks at boot (GPIO2, 8 and 9) are left free.</td></tr>
+      </tbody></table></div>
+  </div>
+  <div class="callout"><b>One small change on the charger board:</b> TP4056 boards come set to 1 A, which is too much for a 400 mAh cell. Replace the resistor marked <span class="mono">R3</span> or <span class="mono">RPROG</span> (usually “122” = 1.2 kΩ) with a 4.7 kΩ resistor. That gives about 250 mA, which is gentle and runs cool. The charger's own USB port stays unused.</div>
+</section>
+
+<section aria-labelledby="hbuild">
+  <h2 id="hbuild">Build order</h2>
+  <div class="panel"><ol class="steps" id="steps"></ol>
+  <p class="note" style="margin-top:10px">Solder all wires before step 1. Use 30 AWG silicone wire and keep each one just long enough to reach. Cut the button and switch legs short and solder the wires straight to them.</p></div>
+</section>
+
+<section aria-labelledby="hbom">
+  <h2 id="hbom">Shopping list</h2>
+  <div class="panel tbl"><table>
+    <thead><tr><th>Qty</th><th>Part</th><th>Notes</th></tr></thead><tbody>
+    <tr><td class="num">1</td><td>ESP32-C3 SuperMini</td><td>Buy it without the pin headers soldered on</td></tr>
+    <tr><td class="num">1</td><td>2.42″ OLED 128×64, SSD1309, 7-pin SPI</td><td>White or blue. Get the version without a soldered header if you can</td></tr>
+    <tr><td class="num">1</td><td>LiPo 502535, 3.7 V, about 400 mAh</td><td>35 × 25 × 5 mm, with built-in protection board</td></tr>
+    <tr><td class="num">1</td><td>TP4056 USB-C charger board with protection (DW01 + 8205)</td><td>28 × 17 mm. Change R3 to 4.7 kΩ</td></tr>
+    <tr><td class="num">1</td><td>Schottky diode SS14 (or 1N5817)</td><td>Battery → 5V pin</td></tr>
+    <tr><td class="num">2</td><td>100 kΩ resistors</td><td>Battery voltage divider</td></tr>
+    <tr><td class="num">1</td><td>4.7 kΩ resistor (0603 or through-hole)</td><td>Sets the charge current</td></tr>
+    <tr><td class="num">1</td><td>Small perfboard scrap, about 10 × 5 mm</td><td>Holds the diode and the divider</td></tr>
+    <tr><td class="num">2</td><td>Tactile switch 6 × 6 × 5 mm, through-hole</td><td>Standard 4-leg click buttons</td></tr>
+    <tr><td class="num">1</td><td>Slide switch SS12D00G4</td><td>Lever 4 mm</td></tr>
+    <tr><td class="num">4</td><td>M2 × 12 countersunk screws</td><td>Self-tapping, or machine screws that cut their own thread</td></tr>
+    <tr><td class="num">—</td><td>1 mm foam tape, 30 AWG silicone wire, heat-shrink</td><td></td></tr>
+    </tbody></table></div>
+</section>
+
+<section aria-labelledby="hprint">
+  <h2 id="hprint">Printing</h2>
+  <div class="two">
+    <div class="panel"><h3>Files</h3><div class="tbl"><table id="printTbl" style="margin-top:8px"><thead><tr><th>File</th><th>Size (mm)</th><th>Print</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="panel"><h3>Settings</h3><ul class="clean" style="margin-top:8px">
+      <li>PLA or PETG, 0.2 mm layers (0.12 mm on the lid looks nicer)</li>
+      <li>3 walls, 20 % infill, <b>no supports</b></li>
+      <li>Base: open side up. Lid: display side down on the bed</li>
+      <li>Button caps: flange down, print 2</li>
+      <li>The model has 0.15–0.3 mm clearances. If your printer over-extrudes, lower the flow by 2–3 %</li>
+    </ul></div>
+  </div>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+// ---------------- parts (assembled positions, mm, Z up) ----------------
+const CASE = {col:"#b9a4e8"};
+const P = [
+ // file, group, colour, metal?, explode vector
+ ["base","case","CASE",0,[0,0,0]], ["lid","lid","CASE",0,[0,0,34]], ["caps","caps","#f7f7f4",0,[0,9,0]],
+ ["snaps","snaps","#ff8a00",0,[0,0,0]],
+ ["oled_pcb","oled","#2b5fb8",0,[0,0,22]], ["oled_glass","oled","#121419",2,[0,0,22]], ["oled_back","oled","#262626",0,[0,0,22]],
+ ["oled_pads","oled","#d4a84b",1,[0,0,22]],
+ ["mcu_pcb","mcu","#23407f",0,[-6,0,10]], ["mcu_pads","mcu","#d4a84b",1,[-6,0,10]], ["mcu_usb","mcu","#c9cdd2",1,[-6,0,10]],
+ ["mcu_chip","mcu","#1b1b1b",0,[-6,0,10]], ["mcu_parts","mcu","#3a3a3a",0,[-6,0,10]],
+ ["battery","bat","#c3c7cf",1,[0,0,15]], ["bat_foam","bat","#2e2e2e",0,[0,0,18]],
+ ["chg_pcb","chg","#2f6fd1",0,[0,0,5]], ["chg_usb","chg","#c9cdd2",1,[0,0,5]], ["chg_chips","chg","#1b1b1b",0,[0,0,5]], ["chg_pads","chg","#e0e0e0",1,[0,0,5]],
+ ["buttons_body","btn","#222",0,[0,4,6]], ["buttons_top","btn","#c9cdd2",1,[0,4,6]], ["buttons_stem","btn","#3a3a3a",0,[0,4,6]],
+ ["sw_body","sw","#222",0,[0,-6,4]], ["sw_lever","sw","#e6e6e6",0,[0,-6,4]],
+ ["powerpath","pp","#3f8f4a",0,[0,-3,7]], ["screws","screws","#a7adb5",1,[0,0,48]],
+];
+const GROUP = {
+ case:["Case base","Holds everything. Printed open side up."],
+ lid:["Lid","Display window. Its skirt drops inside the walls. Printed face down."],
+ caps:["Button caps","Printed. The flange sits inside the wall and the plunger sticks out 1 mm."],
+ snaps:["Snap clips","Flexible hooks and nubs that click over the parts."],
+ oled:["2.42″ OLED module","61.5 × 39.5 mm board. Clamped by the 4 case screws."],
+ mcu:["ESP32-C3 SuperMini","22.5 × 18 mm. Its USB-C socket sits in a wall pocket under a lip."],
+ bat:["LiPo 502535 + foam pad","35 × 25 × 5 mm in a 4-wall pocket. The foam takes up the last gap."],
+ chg:["TP4056 charger","28 × 17 mm in a floor pocket under the battery."],
+ btn:["6 × 6 tactile switches","Pressed sideways through the top wall."],
+ sw:["Slide power switch","SS12D00G4. Cuts the battery, while USB still powers the box."],
+ pp:["Diode + divider board","SS14 diode and 2 × 100k resistors on a scrap of perfboard."],
+ screws:["4 × M2×12 screws","They go through the lid and the OLED into the bosses."],
+};
+const STEPS = [["base"],["mcu"],["pp"],["sw"],["caps"],["btn"],["chg"],["bat"],["bat"],["oled"],["lid"],["screws"]];
+const STEP_NAMES = ["Empty base"];
+
+const cv = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.localClippingEnabled = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(35,1,1,2000);
+cam.up.set(0,0,1);
+const controls = new THREE.OrbitControls(cam, cv);
+controls.enableDamping = true;
+const C0 = new THREE.Vector3(33,22,9);
+function resetCam(){
+  const a = Math.max(cv.clientWidth,1)/Math.max(cv.clientHeight,1);
+  const d = 1.0*Math.max(1, 1.25/a);           // back off on narrow (phone) screens
+  cam.position.set(33+62*d, 22-82*d, 9+74*d); controls.target.copy(C0); controls.update(); }
+resetCam();
+scene.add(new THREE.HemisphereLight(0xffffff,0x8088a0,0.85));
+const key = new THREE.DirectionalLight(0xffffff,0.75); key.position.set(80,-60,140); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff,0.35); fill.position.set(-90,90,40); scene.add(fill);
+
+const clip = new THREE.Plane(new THREE.Vector3(-1,0,0), 30);
+let clipOn = false;
+const meshes = []; // {mesh, group, base:Vector3, ex:Vector3, mat}
+
+// OLED screen texture (128x64 pixel animation)
+const scr = document.createElement("canvas"); scr.width=128; scr.height=64;
+const sctx = scr.getContext("2d");
+const tex = new THREE.CanvasTexture(scr); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.LinearFilter;
+const HEART = ["01100110","11111111","11111111","11111111","01111110","00111100","00011000"];
+let tAnim = 0;
+function drawScreen(){
+  sctx.fillStyle="#000"; sctx.fillRect(0,0,128,64);
+  sctx.fillStyle="#bfeeff";
+  for(let i=0;i<14;i++){ const x=(i*37+tAnim*0.4*(1+i%3))%128, y=(i*23+tAnim*0.2*(1+i%2))%64; sctx.fillRect(x|0,y|0,1,1); }
+  const bx = 60+Math.sin(tAnim/18)*40, by = 6+Math.abs(Math.sin(tAnim/10))*10;
+  HEART.forEach((r,j)=>{ for(let i=0;i<8;i++) if(r[i]==="1"){ sctx.fillRect((bx+i*2)|0,(by+j*2)|0,2,2);} });
+  sctx.font = "bold 11px monospace"; sctx.textBaseline="top";
+  const msg = "HAPPY BIRTHDAY!   ";
+  const w = sctx.measureText(msg).width;
+  const off = (tAnim*0.8)%w;
+  sctx.fillText(msg+msg, 2-off, 40);
+  sctx.fillRect(0,56,128,1);
+  tex.needsUpdate = true;
+}
+function addScreen(){
+  const g = new THREE.PlaneGeometry(55.01,27.49);
+  const m = new THREE.MeshBasicMaterial({map:tex, clippingPlanes:[clip]});
+  m.toneMapped = false;
+  const s = new THREE.Mesh(g,m); s.position.set(33.05,22.05,17.61);
+  s.userData.group="oled"; scene.add(s);
+  meshes.push({mesh:s, group:"oled", ex:new THREE.Vector3(0,0,22), base:s.position.clone()});
+}
+addScreen();
+
+fetch("parts.json").then(r=>r.json()).then(data=>{
+ P.forEach(([f,grp,col,metal,ex])=>{
+    const d = data[f]; if(!d) return;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(Float32Array.from(d.v, x=>x/100), 3));
+    geo.setIndex(d.f);
+    const g2 = geo.toNonIndexed(); g2.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      color: col==="CASE" ? CASE.col : col,
+      metalness: metal===1 ? 0.65 : 0.0, roughness: metal===1 ? 0.35 : (metal===2 ? 0.15 : 0.62),
+      side: THREE.DoubleSide, clippingPlanes:[clip], transparent: grp==="snaps", opacity: 1
+    });
+    const m = new THREE.Mesh(g2, mat);
+    m.userData.group = grp; m.userData.isCase = col==="CASE";
+    if (grp==="snaps") { m.visible=false; mat.depthTest=false; m.renderOrder=5; }
+    scene.add(m);
+    meshes.push({mesh:m, group:grp, ex:new THREE.Vector3(...ex), base:new THREE.Vector3()});
+ });
+ document.getElementById("loading").hidden=true; apply();
+}).catch(()=>{ document.getElementById("loading").textContent="Couldn't load the 3D parts. Reload the page to try again."; });
+
+// --------------- state ---------------
+const st = {xray:false, nolid:false, snaps:false, explode:0, cut:"off", cutPos:45, step:11, hidden:new Set(), anim:null};
+const chipsEl = document.getElementById("partChips");
+["oled","mcu","bat","chg","btn","sw","pp","screws"].forEach(g=>{
+  const b=document.createElement("button"); b.className="chip"; b.textContent=GROUP[g][0].replace(" + foam pad","");
+  b.setAttribute("aria-pressed","true");
+  b.onclick=()=>{ if(st.hidden.has(g)) st.hidden.delete(g); else st.hidden.add(g); b.setAttribute("aria-pressed", String(!st.hidden.has(g))); apply(); };
+  chipsEl.appendChild(b);
+});
+function groupStep(g){ for(let i=0;i<STEPS.length;i++) if(STEPS[i].includes(g)) return i; return 0; }
+function apply(){
+  const e = st.explode/100;
+  meshes.forEach(o=>{
+    const g=o.group, m=o.mesh;
+    let vis = !st.hidden.has(g);
+    if (g==="lid" && st.nolid) vis=false;
+    if (g==="snaps") vis = st.snaps;
+    const gs = groupStep(g==="snaps"?"case":g);
+    if (gs>st.step) vis=false;
+    let k = e;
+    if (st.anim && st.anim.group===g) k = Math.max(k, st.anim.k);
+    m.visible = vis;
+    m.position.copy(o.base).addScaledVector(o.ex, k);
+    if (m.material && m.userData.isCase!==undefined){
+      const isCase = g==="case"||g==="lid";
+      m.material.transparent = isCase ? st.xray : g==="snaps";
+      m.material.opacity = isCase && st.xray ? 0.18 : (g==="snaps"?0.95:1);
+      m.material.depthWrite = !(isCase && st.xray);
+    }
+  });
+  clip.constant = 1e5;
+  const cl = document.getElementById("cutLbl");
+  if (st.cut!=="off"){
+    const ax = {x:[0,66.1,new THREE.Vector3(-1,0,0)], y:[0,44.1,new THREE.Vector3(0,-1,0)], z:[0,19.4,new THREE.Vector3(0,0,-1)]}[st.cut];
+    const v = ax[0] + (ax[1]-ax[0])*st.cutPos/100;
+    clip.normal.copy(ax[2]); clip.constant = v;
+    cl.textContent = st.cut+" = "+v.toFixed(1)+" mm";
+  } else cl.textContent="";
+}
+function press(id, on){ document.getElementById(id).setAttribute("aria-pressed", String(on)); }
+document.getElementById("vXray").onclick=()=>{ st.xray=!st.xray; press("vXray",st.xray); apply(); };
+document.getElementById("vNoLid").onclick=()=>{ st.nolid=!st.nolid; press("vNoLid",st.nolid); apply(); };
+document.getElementById("vSnaps").onclick=()=>{ st.snaps=!st.snaps; press("vSnaps",st.snaps); apply(); };
+document.getElementById("vAssembled").onclick=()=>{ Object.assign(st,{xray:false,nolid:false,snaps:false,explode:0,cut:"off",step:11});
+  st.hidden.clear(); chipsEl.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed","true"));
+  ["vXray","vNoLid","vSnaps"].forEach(i=>press(i,false)); document.getElementById("explode").value=0; document.getElementById("step").value=11;
+  setCut("off"); showStep(); apply(); };
+document.getElementById("vReset").onclick=resetCam;
+document.getElementById("explode").oninput=e=>{ st.explode=+e.target.value; apply(); };
+const cutPos = document.getElementById("cutPos");
+function setCut(c){ st.cut=c; document.querySelectorAll("[data-cut]").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cut===c))); cutPos.disabled = c==="off"; apply(); }
+document.querySelectorAll("[data-cut]").forEach(b=> b.onclick=()=>setCut(b.dataset.cut));
+cutPos.oninput=e=>{ st.cutPos=+e.target.value; apply(); };
+document.querySelectorAll(".swatch").forEach(b=> b.onclick=()=>{
+  CASE.col=b.dataset.col; document.querySelectorAll(".swatch").forEach(s=>s.setAttribute("aria-pressed", String(s===b)));
+  meshes.forEach(o=>{ if(o.mesh.userData.isCase) o.mesh.material.color.set(CASE.col); });
+});
+
+// --------------- assembly steps ---------------
+let checks = null;
+const stepEl = document.getElementById("step"), stepText = document.getElementById("stepText");
+function showStep(){
+  const s = st.step;
+  if (!checks) { stepText.textContent=""; return; }
+  if (s===0) stepText.innerHTML = "<b>Step 0.</b> Empty base, straight off the printer.";
+  else { const a = checks.assembly[s-1]; stepText.innerHTML = "<b>Step "+s+" · "+a.part+".</b> "+a.how+(a.ok?' <span class="pill">clear path</span>':' <span class="pill warn">blocked</span>'); }
+}
+function goStep(s, animate){
+  st.step = Math.max(0, Math.min(11, s)); stepEl.value = st.step; showStep();
+  if (animate && st.step>0){
+    const g = STEPS[st.step][0]; const t0 = performance.now();
+    st.anim = {group:g, k:1.4};
+    (function tick(){ const t=(performance.now()-t0)/700; st.anim && (st.anim.k = Math.max(0,1.4*(1-t))); apply();
+      if (t<1) requestAnimationFrame(tick); else { st.anim=null; apply(); } })();
+  } else apply();
+}
+stepEl.oninput=e=>goStep(+e.target.value, true);
+document.getElementById("stepPrev").onclick=()=>goStep(st.step-1,false);
+document.getElementById("stepNext").onclick=()=>goStep(st.step+1,true);
+let playing=null;
+document.getElementById("stepPlay").onclick=()=>{
+  if (playing){ clearInterval(playing); playing=null; document.getElementById("stepPlay").textContent="Play build"; return; }
+  document.getElementById("stepPlay").textContent="Stop"; goStep(0,false); let s=0;
+  playing=setInterval(()=>{ s++; goStep(s,true); if(s>=11){ clearInterval(playing); playing=null; document.getElementById("stepPlay").textContent="Play build"; } }, 1300);
+};
+
+// --------------- picking ---------------
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let downAt=null;
+cv.addEventListener("pointerdown", e=>{ downAt=[e.clientX,e.clientY]; });
+cv.addEventListener("pointerup", e=>{
+  if(!downAt || Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1])>6) return;
+  const r = cv.getBoundingClientRect();
+  ptr.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ptr, cam);
+  const vis = meshes.filter(o=>o.mesh.visible && !(st.xray && (o.group==="case"||o.group==="lid"))).map(o=>o.mesh);
+  let hits = ray.intersectObjects(vis, false);
+  if (st.cut!=="off") hits = hits.filter(h=> clip.distanceToPoint(h.point) >= 0);
+  const pk = document.getElementById("pick");
+  if (hits.length){ const g = hits[0].object.userData.group; pk.innerHTML = "<b>"+GROUP[g][0]+"</b><br>"+GROUP[g][1]; pk.hidden=false; }
+  else pk.hidden = true;
+});
+
+// --------------- render loop ---------------
+function size(){ const w=cv.clientWidth, h=cv.clientHeight; if (cv.width!==Math.round(w*renderer.getPixelRatio())||cv.height!==Math.round(h*renderer.getPixelRatio())){ renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); } }
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function loop(){ size(); if(!reduce || tAnim===0){ tAnim++; drawScreen(); } controls.update(); renderer.render(scene,cam); requestAnimationFrame(loop); }
+drawScreen(); size(); resetCam(); loop();
+
+// --------------- battery calculator ---------------
+const $ = id=>document.getElementById(id);
+function calc(){
+  const lit=+$("lit").value/100, con=+$("con").value/100, cpu=+$("cpu").value, cap=+$("cap").value;
+  $("litO").textContent = Math.round(lit*100)+" %"; $("conO").textContent = Math.round(con*100)+" %";
+  const oled = 3 + 180*lit*con, other = 0.5, tot = cpu+oled+other;
+  const h = cap*0.88/tot;
+  $("hours").textContent = h>=10 ? h.toFixed(0) : h.toFixed(1);
+  $("headHours").textContent = "≈ "+(h>=10?h.toFixed(0):h.toFixed(1))+" h";
+  $("draw").textContent = "Average draw ≈ "+tot.toFixed(0)+" mA (CPU "+cpu+" · OLED "+oled.toFixed(0)+" · rest "+other+")";
+  const css = getComputedStyle(document.documentElement);
+  const parts = [["Processor",cpu,css.getPropertyValue("--accent")],["OLED",oled,css.getPropertyValue("--pixel")],["Other",other,css.getPropertyValue("--muted")]];
+  $("bar").innerHTML = parts.map(p=>'<i style="width:'+(100*p[1]/tot)+'%;background:'+p[2]+'"></i>').join("");
+  $("legend").innerHTML = parts.map(p=>'<span style="--c:'+p[2]+'">'+p[0]+' '+p[1].toFixed(0)+' mA</span>').join("");
+  $("chg").textContent = (cap*1.15/250).toFixed(1)+" h";
+}
+["lit","con","cpu","cap"].forEach(i=>$(i).addEventListener("input",calc)); calc();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", calc);
+
+// --------------- fit-check data ---------------
+fetch("checks.json").then(r=>r.json()).then(d=>{
+  checks = d; showStep();
+  const hard = d.overlaps.filter(o=>!o.ok).length;
+  const asmOk = d.assembly.filter(a=>a.ok).length;
+  const maxPlay = Math.max(...d.play.flatMap(r=>["+X","-X","+Y","-Y","+Z","-Z"].map(k=>typeof r[k]==="number"?r[k]:9)));
+  $("verdict").innerHTML = [
+    [hard===0, hard===0?"0":hard, "collisions between parts in the finished box"],
+    [asmOk===d.assembly.length, asmOk+"/"+d.assembly.length, "assembly steps with a clear path"],
+    [maxPlay<=0.5, maxPlay.toFixed(2)+" mm", "largest wiggle of any part"],
+    [d.print.every(p=>p.watertight), d.print.length+" files", "printable, watertight, no supports"],
+  ].map(([ok,n,t])=>'<div class="v'+(ok?"":" warn")+'"><span class="n mono">'+n+'</span><span>'+t+'</span></div>').join("");
+  const tb = document.querySelector("#playTbl tbody");
+  tb.innerHTML = d.play.map(r=>{
+    const vals = ["+X","-X","+Y","-Y","+Z","-Z"].map(k=>typeof r[k]==="number"?r[k]:9);
+    const mx = Math.max(...vals);
+    return "<tr><td>"+r.part+"</td><td>"+r.held_by+"</td><td class='num'>"+mx.toFixed(2)+" mm</td><td>"+(mx<=0.5?"<span class='pill'>locked</span>":"<span class='pill warn'>loose</span>")+"</td></tr>";
+  }).join("");
+  $("steps").innerHTML = d.assembly.map(a=>"<li><b>"+a.part+".</b> "+a.how+(a.snap_steps?" <span class='pill'>clicks in</span>":"")+"</li>").join("");
+  const how = {"case_base.stl":"open side up","case_lid.stl":"display side down","button_cap.stl":"×2, flange down","test_fit.stl":"print first"};
+  document.querySelector("#printTbl tbody").innerHTML = d.print.map(p=>"<tr><td class='num'>"+p.file+"</td><td class='num'>"+p.size.join(" × ")+"</td><td>"+how[p.file]+"</td></tr>").join("");
+}).catch(()=>{ $("verdict").innerHTML='<p class="note">Couldn\'t load the check results. Reload the page to try again.</p>'; });
+})();
+</script>

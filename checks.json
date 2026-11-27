@@ -1,0 +1,224 @@
+{
+ "overlaps": [
+  {
+   "a": "Case base",
+   "b": "M2 screws",
+   "vol": 19.984,
+   "ok": true,
+   "note": "screw threads cut into the 1.7 mm pilot holes (intended)"
+  }
+ ],
+ "play": [
+  {
+   "part": "ESP32-C3 SuperMini",
+   "held_by": "wall pocket + lip over USB socket + back stop + 2 snap hooks",
+   "+X": 0.2,
+   "-X": 0.0,
+   "+Y": 0.15,
+   "-Y": 0.15,
+   "+Z": 0.1,
+   "-Z": 0.0
+  },
+  {
+   "part": "LiPo battery",
+   "held_by": "4-wall pocket on a shelf; foam pad from OLED above",
+   "+X": 0.3,
+   "-X": 0.3,
+   "+Y": 0.3,
+   "-Y": 0.3,
+   "+Z": 0.0,
+   "-Z": 0.0
+  },
+  {
+   "part": "Charger TP4056",
+   "held_by": "floor pocket; battery lies on top of it",
+   "+X": 0.15,
+   "-X": 0.15,
+   "+Y": 0.15,
+   "-Y": 0.15,
+   "+Z": 0.2,
+   "-Z": 0.0
+  },
+  {
+   "part": "Tactile buttons",
+   "held_by": "pocket walls + back rib + snap nubs",
+   "+X": 0.15,
+   "-X": 0.15,
+   "+Y": 0.0,
+   "-Y": 0.0,
+   "+Z": 0.05,
+   "-Z": 0.0
+  },
+  {
+   "part": "Slide switch",
+   "held_by": "pocket + wall slot + snap nubs + ramp catch",
+   "+X": 0.15,
+   "-X": 0.15,
+   "+Y": 0.15,
+   "-Y": 0.0,
+   "+Z": 0.05,
+   "-Z": 0.0
+  },
+  {
+   "part": "Button caps",
+   "held_by": "flange inside wall; switch behind it",
+   "+X": 0.15,
+   "-X": 0.15,
+   "+Y": 0.0,
+   "-Y": 0.0,
+   "+Z": 0.15,
+   "-Z": 0.15
+  },
+  {
+   "part": "OLED module",
+   "held_by": "clamped by 4x M2 screws between bosses and lid",
+   "+X": 0.05,
+   "-X": 0.05,
+   "+Y": 0.05,
+   "-Y": 0.05,
+   "+Z": 0.0,
+   "-Z": 0.0
+  }
+ ],
+ "assembly": [
+  {
+   "step": 1,
+   "part": "ESP32-C3 SuperMini",
+   "how": "Tilt the board ~35\u00b0, slide the USB socket under the wall lip, press the back end down until the 2 hooks click.",
+   "hard_collisions": 0,
+   "snap_steps": 10,
+   "ok": true
+  },
+  {
+   "step": 2,
+   "part": "Power-path board",
+   "how": "Stick the little power-path board down with double-sided tape.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 3,
+   "part": "Slide switch",
+   "how": "Lower it 4.5 mm away from the wall, push the lever out through the slot; it clicks over the ramp.",
+   "hard_collisions": 0,
+   "snap_steps": 21,
+   "ok": true
+  },
+  {
+   "step": 4,
+   "part": "Button caps",
+   "how": "Drop each cap inside the wall and push its plunger out through the hole.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 5,
+   "part": "Tactile buttons",
+   "how": "Press each 6\u00d76 switch down into its pocket behind the cap; nubs click over it.",
+   "hard_collisions": 0,
+   "snap_steps": 12,
+   "ok": true
+  },
+  {
+   "step": 6,
+   "part": "Charger TP4056",
+   "how": "Lay the charger board in its floor pocket (wires out through the channels).",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 7,
+   "part": "LiPo battery",
+   "how": "Lay the battery on the shelf inside its 4 walls.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 8,
+   "part": "Foam pad",
+   "how": "Stick a 1 mm foam pad on top of the battery.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 9,
+   "part": "OLED module",
+   "how": "Lay the OLED glass-up on the 4 bosses.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 10,
+   "part": "Lid",
+   "how": "Put the lid on; its skirt drops inside the walls.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 11,
+   "part": "M2 screws",
+   "how": "Drive 4\u00d7 M2\u00d712 countersunk screws through lid + OLED into the bosses.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
+   "ok": true
+  }
+ ],
+ "print": [
+  {
+   "file": "case_base.stl",
+   "watertight": true,
+   "size": [
+    66.1,
+    44.1,
+    17.8
+   ],
+   "volume_cm3": 15.31,
+   "overhang_mm2": 69.8
+  },
+  {
+   "file": "case_lid.stl",
+   "watertight": true,
+   "size": [
+    66.1,
+    44.1,
+    3.8
+   ],
+   "volume_cm3": 2.26,
+   "overhang_mm2": 0.0
+  },
+  {
+   "file": "button_cap.stl",
+   "watertight": true,
+   "size": [
+    5.2,
+    5.2,
+    3.9
+   ],
+   "volume_cm3": 0.06,
+   "overhang_mm2": 0.0
+  },
+  {
+   "file": "test_fit.stl",
+   "watertight": true,
+   "size": [
+    82.1,
+    44.1,
+    12.0
+   ],
+   "volume_cm3": 2.05,
+   "overhang_mm2": 18.5
+  }
+ ],
+ "dims": {
+  "W": 66.1,
+  "H": 44.1,
+  "T": 19.4
+ }
+}
