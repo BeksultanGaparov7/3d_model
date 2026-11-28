@@ -1,5 +1,13 @@
 {
- "overlaps": [],
+ "overlaps": [
+  {
+   "a": "Case base",
+   "b": "M2 screws",
+   "vol": 13.703,
+   "ok": true,
+   "note": "screw threads cut into the 1.7 mm pilot holes (intended)"
+  }
+ ],
  "play": [
   {
    "part": "ESP32-C3 SuperMini",
@@ -23,7 +31,7 @@
   },
   {
    "part": "Charger board",
-   "held_by": "micro-USB edge in a wall pocket, side walls, ramp catch, 2 snap nubs",
+   "held_by": "against the wall, side walls, ramp catch, 2 snap nubs",
    "+X": 0.0,
    "-X": 0.15,
    "+Y": 0.15,
@@ -53,7 +61,7 @@
   },
   {
    "part": "OLED module",
-   "held_by": "4 printed pegs through its holes; clamped by lid posts",
+   "held_by": "4 M2 screws through its holes; clamped between posts and lid",
    "+X": 0.0,
    "-X": 0.0,
    "+Y": 0.0,
@@ -74,7 +82,7 @@
   {
    "step": 2,
    "part": "Charger board",
-   "how": "Hold it 3 mm away from the right wall, lower it, then push it toward the wall: the micro-USB goes into its opening and the board clicks over the ramp.",
+   "how": "Lower it 2 mm away from the right wall, then push it against the wall: it clicks over the ramp and under 2 nubs.",
    "hard_collisions": 0,
    "snap_steps": 22,
    "ok": true
@@ -122,7 +130,7 @@
   {
    "step": 8,
    "part": "OLED module",
-   "how": "Lay the OLED glass-up so the 4 printed pegs go through its corner holes.",
+   "how": "Lay the OLED glass-up on the 4 posts, holes over the posts.",
    "hard_collisions": 0,
    "snap_steps": 0,
    "ok": true
@@ -130,9 +138,17 @@
   {
    "step": 9,
    "part": "Lid",
-   "how": "Press the lid on until it clicks (5 snap bumps). To open: fingernail in the notch on the front edge.",
+   "how": "Put the lid on; its skirt drops inside the walls.",
    "hard_collisions": 0,
-   "snap_steps": 2,
+   "snap_steps": 0,
+   "ok": true
+  },
+  {
+   "step": 10,
+   "part": "M2 screws",
+   "how": "Drive 4\u00d7 M2\u00d710 countersunk self-tapping screws through the lid and the OLED into the posts. Snug, not tight.",
+   "hard_collisions": 0,
+   "snap_steps": 0,
    "ok": true
   }
  ],
@@ -145,8 +161,8 @@
     48.6,
     16.6
    ],
-   "volume_cm3": 14.71,
-   "overhang_mm2": 131.6
+   "volume_cm3": 14.77,
+   "overhang_mm2": 69.9
   },
   {
    "file": "case_lid.stl",
@@ -156,8 +172,8 @@
     48.6,
     3.6
    ],
-   "volume_cm3": 2.3,
-   "overhang_mm2": 17.5
+   "volume_cm3": 2.27,
+   "overhang_mm2": 0.0
   },
   {
    "file": "button_caps_x2.stl",

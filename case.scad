@@ -2,7 +2,7 @@
 //  OLED Gift Box  v2  (built around the measured parts)
 //  ESP32-C3 SuperMini + M242OLED (2.42" SSD1309, 72.5 x 44 board)
 //  + 1000 mAh LiPo 50x22x7 with its own micro-USB charger/switch board
-//  + 2x 6x6 buttons.  Snap-on lid, NO screws.  All units mm.
+//  + 2x 6x6 buttons.  Lid + OLED held by 4x M2x10 screws.  One port: USB-C.
 //
 //  openscad -D 'part="base"' -o base.stl case.scad
 // =====================================================================
@@ -58,8 +58,8 @@ stop_x0 = mcu_x0 + mcu_l + 0.2; stop_t = 1.2;
 // battery: lower half, against the -Y wall
 bat_x0 = 8.3; bat_y0 = wall + clr;  bat_x1 = bat_x0 + bat_l; bat_y1 = bat_y0 + bat_w;
 
-// charger board: long edge (micro-USB) in a pocket of the +X wall
-cb_pd = 1.0;
+// charger board: against the +X wall, hidden inside (charged through the SuperMini USB-C)
+cb_pd = 0;                                     // board is fully inside (no micro-USB opening)
 cb_x1 = W - wall + cb_pd;  cb_x0 = cb_x1 - cb_w;
 cb_y0 = 7.2;  cb_y1 = cb_y0 + cb_l;
 cb_usb_y = cb_y0 + cb_usb_c;  cb_sw_y = cb_y0 + cb_sw_c;
@@ -74,17 +74,13 @@ btn_zc = floor_t + btn/2;
 // diode (SS14 in heat-shrink) lives in the free middle area
 dio = [7, 3, 3]; dio_x0 = 30; dio_y0 = 29;
 
-// lid snap bumps
-snap_z = z_wall - 0.9;
-snaps_x = [W*0.3, W*0.7];
+// M2 screws: through lid + OLED holes into the posts
+scr_len = 10; scr_d = 1.95; pilot_d = 1.7; hang_z = 9.0;   // the hanging post: screw tip pokes 0.8 mm out of its underside, clear of the SuperMini
 
 // ====================================================================
 module rbox(s, r) { hull() for (x=[r, s[0]-r], y=[r, s[1]-r]) translate([x,y,0]) cylinder(r=r, h=s[2]); }
 module rrect_x(w, h, r, len) { rotate([0,90,0]) hull() for (a=[-1,1], b=[-1,1]) translate([a*(h/2-r), b*(w/2-r), 0]) cylinder(r=r, h=len); }
-module peg(p) translate([p[0], p[1], z_oled-0.01]) {
-  cylinder(d=hole_d-0.4, h=oled_t+so_h-0.5);
-  translate([0,0,oled_t+so_h-0.5]) cylinder(d1=hole_d-0.4, d2=hole_d-1.2, h=0.4);
-}
+
 
 // ------------------------- snap features of the base -----------------
 module snaps() {
@@ -108,13 +104,12 @@ module base(with_snaps=true) {
         rbox([W, H, z_wall], r_out);
         translate([wall, wall, floor_t]) rbox([in_w, in_h, z_wall], 1.0);
       }
-      // 3 posts from the floor; the one above the SuperMini hangs from the corner walls
+      // 3 screw posts from the floor; the one above the SuperMini hangs from the corner walls
       for (i=[0,2,3]) translate([holes[i][0], holes[i][1], 0]) cylinder(d=5.2, h=z_oled);
       hull() {
-        translate([holes[1][0], holes[1][1], 9.0]) cylinder(d=5.2, h=z_oled-9.0);
-        translate([holes[1][0]-2.6, H-wall-0.01, 9.0-4.6]) cube([5.2, 0.01, z_oled-9.0+4.6]);
+        translate([holes[1][0], holes[1][1], hang_z]) cylinder(d=5.2, h=z_oled-hang_z);
+        translate([holes[1][0]-2.6, H-wall-0.01, hang_z-4.6]) cube([5.2, 0.01, z_oled-hang_z+4.6]);
       }
-      for (p = holes) peg(p);
       // ---- SuperMini cradle ----
       for (y = [mcu_y0+5.0, mcu_y0+11.5]) translate([wall+2, y, floor_t-0.01]) cube([mcu_l-4, 1.5, mcu_raise+0.01]);
       for (y = [mcu_y0-fit-1.0, mcu_y0+mcu_w+fit])
@@ -142,14 +137,8 @@ module base(with_snaps=true) {
     translate([wall-pocket_d, mcu_y0-0.2, mcu_z0-0.2]) cube([pocket_d+0.01, mcu_w+0.4, mcu_t+0.4]);
     translate([wall-pocket_d, mcu_cy-usb_w/2-0.2, mcu_z0-0.2]) cube([pocket_d+0.01, usb_w+0.4, mcu_t+usb_h+0.34]);
     translate([-0.01, mcu_cy, usb_zc]) rrect_x(12.4, 6.8, 2.0, wall-pocket_d+0.02);
-    // charger board: wall pocket for its edge + micro-USB opening
-    translate([W-wall-0.01, cb_y0-fit, floor_t-0.01]) cube([cb_pd+0.01, cb_l+2*fit, cb_t+0.3]);
-    translate([W-(wall-cb_pd)-0.01, cb_usb_y, cb_ztop+1.3]) rrect_x(11.0, 6.5, 2.0, wall);
-    // lid snap grooves in the walls
-    for (x = snaps_x) for (y = [wall-0.5, H-wall-0.01]) translate([x-6, y, snap_z-0.5]) cube([12, 0.51, 1.0]);
-    translate([wall-0.5, H/2-6, snap_z-0.5]) cube([0.51, 12, 1.0]);
-    // pry notch for opening the lid
-    translate([W/2-5, -0.01, z_wall-1.0]) cube([10, 0.8, 1.01]);
+    // pilot holes for the M2 screws (self-tapping into plastic)
+    for (p = holes) translate([p[0], p[1], Ht-scr_len-1.5]) cylinder(d=pilot_d, h=scr_len+2);
     // button plunger holes
     for (x = btn_xs) translate([x, H-wall-0.01, btn_zc]) rotate([-90,0,0]) cylinder(d=4.3, h=wall+0.02);
   }
@@ -173,16 +162,18 @@ module lid_body() {
       cube([glass_l+1.0, glass_w+1.0, 0.01]);
       translate([-0.6,-0.6,0.6]) cube([glass_l+2.2, glass_w+2.2, 0.01]);
     }
-    // sockets for the pegs
-    for (p = holes) translate([p[0], p[1], z_ptop-0.01]) cylinder(d=hole_d, h=so_h+0.4);
+    // countersunk M2 holes
+    for (p = holes) translate([p[0], p[1], 0]) {
+      translate([0,0,z_ptop-0.01]) cylinder(d=2.3, h=Ht);
+      translate([0,0,Ht-1.1]) cylinder(d1=2.3, d2=4.3, h=1.11);
+    }
   }
 }
-module lid_snaps() {
-  for (x = snaps_x) for (s=[-1,1])
-    translate([x-5, s<0 ? wall+fit-0.35 : H-wall-fit-0.01, snap_z-0.35]) cube([10, 0.36, 0.7]);
-  translate([wall+fit-0.35, H/2-5, snap_z-0.35]) cube([0.36, 10, 0.7]);
+module lid() lid_body();
+module screws() for (p=holes) translate([p[0], p[1], 0]) {
+  translate([0,0,Ht-scr_len]) cylinder(d=scr_d, h=scr_len-1.0);
+  translate([0,0,Ht-1.0]) cylinder(d1=scr_d, d2=3.9, h=1.0);
 }
-module lid() { lid_body(); lid_snaps(); }
 
 // --------------------------- BUTTON CAP ------------------------------
 module cap_print() {
@@ -234,7 +225,7 @@ module diode()  translate([dio_x0, dio_y0, floor_t]) cube(dio);
 // ----------------------------- SELECTOR ------------------------------
 module show(n) {
   if (n=="base") base(); else if (n=="base_nosnap") base(false); else if (n=="snaps") snaps();
-  else if (n=="lid") lid(); else if (n=="lid_nosnap") lid_body(); else if (n=="lid_snaps") lid_snaps();
+  else if (n=="lid") lid(); else if (n=="screws") screws();
   else if (n=="caps") caps(); else if (n=="cap") cap_print(); else if (n=="caps_print") caps_print();
   else if (n=="oled_pcb") oled_pcb(); else if (n=="oled_glass") oled_glass();
   else if (n=="oled_back") oled_back(); else if (n=="oled_hdr") oled_hdr();
@@ -251,7 +242,7 @@ if (part == "assembly") {
   color("RoyalBlue") oled_pcb(); color("#111") oled_glass(); color("#333") oled_hdr();
   color("#222") mcu_pcb(); color("Silver") mcu_usb();
   color("Silver") battery(); color("Green") cb_pcb(); color("Silver") cb_usb(); color("#222") cb_sw();
-  color("#222") buttons_body(); color("Orange") diode();
+  color("#222") buttons_body(); color("Orange") diode(); color("Gray") screws();
 } else if (part == "dims") {
   echo(str("OUTER W=", W, " H=", H, " T=", Ht, " z_oled=", z_oled));
 } else show(part);

@@ -10,7 +10,7 @@ import trimesh
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCAD = os.path.join(ROOT, "case.scad")
 
-COMPONENTS = ["base", "base_nosnap", "snaps", "lid", "lid_nosnap", "lid_snaps", "caps",
+COMPONENTS = ["base", "base_nosnap", "snaps", "lid", "screws", "caps",
               "oled_pcb", "oled_glass", "oled_back", "oled_hdr",
               "mcu_pcb", "mcu_pads", "mcu_usb", "mcu_chip", "mcu_parts", "battery", "bat_foam",
               "cb_pcb", "cb_usb", "cb_sw", "cb_chips",

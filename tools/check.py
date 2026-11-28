@@ -19,13 +19,12 @@ GROUPS = {   # physical objects
     "LiPo battery": ["battery"], "Foam pad": ["bat_foam"],
     "Charger board": ["cb_pcb", "cb_usb", "cb_sw", "cb_chips"],
     "Tactile buttons": ["buttons_body", "buttons_top", "buttons_stem"],
-    "Diode": ["diode"],
+    "Diode": ["diode"], "M2 screws": ["screws"],
 }
 G = {k: union([P(n) for n in v]) for k, v in GROUPS.items()}
 RIGID = P("base_nosnap")
 SNAPS = P("snaps")
-LID_RIGID = P("lid_nosnap")
-LID_SNAPS = P("lid_snaps")
+
 
 def ivol(a, b):
     if not (np.all(a.bounds[0] < b.bounds[1] - 1e-4) and np.all(b.bounds[0] < a.bounds[1] - 1e-4)):
@@ -43,7 +42,7 @@ res = {"overlaps": [], "play": [], "assembly": [], "print": [], "dims": {}}
 names = list(G)
 
 # ---------- 1. interference in the final assembled position ----------
-EXPECTED = {}
+EXPECTED = {("Case base", "M2 screws"): "screw threads cut into the 1.7 mm pilot holes (intended)"}
 for i, a in enumerate(names):
     for b in names[i + 1:]:
         v = ivol(G[a], G[b])
@@ -56,13 +55,13 @@ print("Interference:", res["overlaps"])
 DIRS = {"+X": [1, 0, 0], "-X": [-1, 0, 0], "+Y": [0, 1, 0], "-Y": [0, -1, 0], "+Z": [0, 0, 1], "-Z": [0, 0, -1]}
 LOOSE = {"ESP32-C3 SuperMini": "wall pocket + lip over USB-C socket + back stop + 2 snap hooks",
          "LiPo battery": "3-wall pocket + case wall; foam pad under the OLED",
-         "Charger board": "micro-USB edge in a wall pocket, side walls, ramp catch, 2 snap nubs",
+         "Charger board": "against the wall, side walls, ramp catch, 2 snap nubs",
          "Tactile buttons": "pocket walls + back rib + snap nubs",
          "Button caps": "flange inside wall; switch behind it",
-         "OLED module": "4 printed pegs through its holes; clamped by lid posts"}
+         "OLED module": "4 M2 screws through its holes; clamped between posts and lid"}
 STEP, MAXD = 0.05, 1.0
 for name, how in LOOSE.items():
-    others = union([G[k] for k in names if k not in (name, "Diode")])
+    others = union([G[k] for k in names if k not in (name, "Diode", "M2 screws")])
     row = {"part": name, "held_by": how}
     for d, v in DIRS.items():
         dist = None
@@ -95,14 +94,15 @@ mpath = [mT(TH, 4.0, z) for z in np.linspace(25, 0, 51)] + [mT(TH, dx, 0) for dx
 
 STEPS = [
     ("ESP32-C3 SuperMini", "Tilt the board ~35°, slide its USB-C socket under the wall lip, press the back end down until the 2 hooks click.", mpath),
-    ("Charger board", "Hold it 3 mm away from the right wall, lower it, then push it toward the wall: the micro-USB goes into its opening and the board clicks over the ramp.", drop_then_slide([-3.0, 0])),
+    ("Charger board", "Lower it 2 mm away from the right wall, then push it against the wall: it clicks over the ramp and under 2 nubs.", drop_then_slide([-2.0, 0])),
     ("Diode", "Lay the diode (in heat-shrink) in the free space in the middle.", lin([0, 0, 25], 50)),
     ("LiPo battery", "Lay the battery in its pocket along the front wall.", lin([0, 0, 25], 50)),
     ("Foam pad", "Stick a 1 mm foam pad on top of the battery (yours already has one).", lin([0, 0, 25], 50)),
     ("Button caps", "Drop each cap inside the back wall and push its plunger out through the hole.", drop_then_slide([0, -3.2], 16)),
     ("Tactile buttons", "Press each 6×6 switch down into its pocket behind the cap; nubs click over it.", lin([0, 0, 25], 50)),
-    ("OLED module", "Lay the OLED glass-up so the 4 printed pegs go through its corner holes.", lin([0, 0, 25], 50)),
-    ("Lid", "Press the lid on until it clicks (5 snap bumps). To open: fingernail in the notch on the front edge.", lin([0, 0, 25], 50)),
+    ("OLED module", "Lay the OLED glass-up on the 4 posts, holes over the posts.", lin([0, 0, 25], 50)),
+    ("Lid", "Put the lid on; its skirt drops inside the walls.", lin([0, 0, 25], 50)),
+    ("M2 screws", "Drive 4× M2×10 countersunk self-tapping screws through the lid and the OLED into the posts. Snug, not tight.", lin([0, 0, 12], 24)),
 ]
 installed = []
 for name, how, path in STEPS:
@@ -111,9 +111,9 @@ for name, how, path in STEPS:
     prev = None
     for M in path:
         m = moved(G[name], M)
-        if name == "Lid":
-            h = ivol(moved(LID_RIGID, M), rigid)
-            s = ivol(moved(LID_SNAPS, M), RIGID) + ivol(moved(LID_RIGID, M), SNAPS)
+        if name == "M2 screws":
+            h = ivol(m, union([G[k] for k in installed])) if installed else 0
+            s = 0
         else:
             h = ivol(m, rigid)
             s = ivol(m, SNAPS)
