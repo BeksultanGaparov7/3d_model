@@ -10,11 +10,12 @@ import trimesh
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCAD = os.path.join(ROOT, "case.scad")
 
-COMPONENTS = ["base", "base_nosnap", "snaps", "lid", "caps", "oled_pcb", "oled_glass", "oled_aa", "oled_back", "oled_pads",
+COMPONENTS = ["base", "base_nosnap", "snaps", "lid", "lid_nosnap", "lid_snaps", "caps",
+              "oled_pcb", "oled_glass", "oled_back", "oled_hdr",
               "mcu_pcb", "mcu_pads", "mcu_usb", "mcu_chip", "mcu_parts", "battery", "bat_foam",
-              "chg_pcb", "chg_usb", "chg_chips", "chg_pads", "buttons_body", "buttons_top",
-              "buttons_stem", "sw_body", "sw_lever", "powerpath", "screws"]
-PRINT = {"case_base": "base", "case_lid": "lid", "button_cap": "cap", "test_fit": "test_fit"}
+              "cb_pcb", "cb_usb", "cb_sw", "cb_chips",
+              "buttons_body", "buttons_top", "buttons_stem", "diode"]
+PRINT = {"case_base": "base", "case_lid": "lid", "button_caps_x2": "caps_print"}
 
 
 def export(name, out, fn=40):

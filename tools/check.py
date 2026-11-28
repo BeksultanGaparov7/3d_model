@@ -14,17 +14,18 @@ def union(ms):
 
 GROUPS = {   # physical objects
     "Case base": ["base"], "Lid": ["lid"], "Button caps": ["caps"],
-    "OLED module": ["oled_pcb", "oled_glass", "oled_back"],
+    "OLED module": ["oled_pcb", "oled_glass", "oled_back", "oled_hdr"],
     "ESP32-C3 SuperMini": ["mcu_pcb", "mcu_usb", "mcu_chip", "mcu_parts"],
     "LiPo battery": ["battery"], "Foam pad": ["bat_foam"],
-    "Charger TP4056": ["chg_pcb", "chg_usb", "chg_chips"],
+    "Charger board": ["cb_pcb", "cb_usb", "cb_sw", "cb_chips"],
     "Tactile buttons": ["buttons_body", "buttons_top", "buttons_stem"],
-    "Slide switch": ["sw_body", "sw_lever"], "Power-path board": ["powerpath"],
-    "M2 screws": ["screws"],
+    "Diode": ["diode"],
 }
 G = {k: union([P(n) for n in v]) for k, v in GROUPS.items()}
 RIGID = P("base_nosnap")
 SNAPS = P("snaps")
+LID_RIGID = P("lid_nosnap")
+LID_SNAPS = P("lid_snaps")
 
 def ivol(a, b):
     if not (np.all(a.bounds[0] < b.bounds[1] - 1e-4) and np.all(b.bounds[0] < a.bounds[1] - 1e-4)):
@@ -42,7 +43,7 @@ res = {"overlaps": [], "play": [], "assembly": [], "print": [], "dims": {}}
 names = list(G)
 
 # ---------- 1. interference in the final assembled position ----------
-EXPECTED = {("Case base", "M2 screws"): "screw threads cut into the 1.7 mm pilot holes (intended)"}
+EXPECTED = {}
 for i, a in enumerate(names):
     for b in names[i + 1:]:
         v = ivol(G[a], G[b])
@@ -53,16 +54,15 @@ print("Interference:", res["overlaps"])
 
 # ---------- 2. play: how far each part can move before touching something ----------
 DIRS = {"+X": [1, 0, 0], "-X": [-1, 0, 0], "+Y": [0, 1, 0], "-Y": [0, -1, 0], "+Z": [0, 0, 1], "-Z": [0, 0, -1]}
-LOOSE = {"ESP32-C3 SuperMini": "wall pocket + lip over USB socket + back stop + 2 snap hooks",
-         "LiPo battery": "4-wall pocket on a shelf; foam pad from OLED above",
-         "Charger TP4056": "floor pocket; battery lies on top of it",
+LOOSE = {"ESP32-C3 SuperMini": "wall pocket + lip over USB-C socket + back stop + 2 snap hooks",
+         "LiPo battery": "3-wall pocket + case wall; foam pad under the OLED",
+         "Charger board": "micro-USB edge in a wall pocket, side walls, ramp catch, 2 snap nubs",
          "Tactile buttons": "pocket walls + back rib + snap nubs",
-         "Slide switch": "pocket + wall slot + snap nubs + ramp catch",
          "Button caps": "flange inside wall; switch behind it",
-         "OLED module": "clamped by 4x M2 screws between bosses and lid"}
+         "OLED module": "4 printed pegs through its holes; clamped by lid posts"}
 STEP, MAXD = 0.05, 1.0
 for name, how in LOOSE.items():
-    others = union([G[k] for k in names if k not in (name, "M2 screws")])
+    others = union([G[k] for k in names if k not in (name, "Diode")])
     row = {"part": name, "held_by": how}
     for d, v in DIRS.items():
         dist = None
@@ -94,17 +94,15 @@ mpath = [mT(TH, 4.0, z) for z in np.linspace(25, 0, 51)] + [mT(TH, dx, 0) for dx
         [mT(th, 0, 0) for th in np.linspace(TH, 0, 71)]
 
 STEPS = [
-    ("ESP32-C3 SuperMini", "Tilt the board ~35°, slide the USB socket under the wall lip, press the back end down until the 2 hooks click.", mpath),
-    ("Power-path board", "Stick the little power-path board down with double-sided tape.", lin([0, 0, 25], 50)),
-    ("Slide switch", "Lower it 4.5 mm away from the wall, push the lever out through the slot; it clicks over the ramp.", drop_then_slide([0, 4.5])),
-    ("Button caps", "Drop each cap inside the wall and push its plunger out through the hole.", drop_then_slide([0, -3.2], 16)),
+    ("ESP32-C3 SuperMini", "Tilt the board ~35°, slide its USB-C socket under the wall lip, press the back end down until the 2 hooks click.", mpath),
+    ("Charger board", "Hold it 3 mm away from the right wall, lower it, then push it toward the wall: the micro-USB goes into its opening and the board clicks over the ramp.", drop_then_slide([-3.0, 0])),
+    ("Diode", "Lay the diode (in heat-shrink) in the free space in the middle.", lin([0, 0, 25], 50)),
+    ("LiPo battery", "Lay the battery in its pocket along the front wall.", lin([0, 0, 25], 50)),
+    ("Foam pad", "Stick a 1 mm foam pad on top of the battery (yours already has one).", lin([0, 0, 25], 50)),
+    ("Button caps", "Drop each cap inside the back wall and push its plunger out through the hole.", drop_then_slide([0, -3.2], 16)),
     ("Tactile buttons", "Press each 6×6 switch down into its pocket behind the cap; nubs click over it.", lin([0, 0, 25], 50)),
-    ("Charger TP4056", "Lay the charger board in its floor pocket (wires out through the channels).", lin([0, 0, 25], 50)),
-    ("LiPo battery", "Lay the battery on the shelf inside its 4 walls.", lin([0, 0, 25], 50)),
-    ("Foam pad", "Stick a 1 mm foam pad on top of the battery.", lin([0, 0, 25], 50)),
-    ("OLED module", "Lay the OLED glass-up on the 4 bosses.", lin([0, 0, 25], 50)),
-    ("Lid", "Put the lid on; its skirt drops inside the walls.", lin([0, 0, 25], 50)),
-    ("M2 screws", "Drive 4× M2×12 countersunk screws through lid + OLED into the bosses.", lin([0, 0, 12], 24)),
+    ("OLED module", "Lay the OLED glass-up so the 4 printed pegs go through its corner holes.", lin([0, 0, 25], 50)),
+    ("Lid", "Press the lid on until it clicks (5 snap bumps). To open: fingernail in the notch on the front edge.", lin([0, 0, 25], 50)),
 ]
 installed = []
 for name, how, path in STEPS:
@@ -113,11 +111,12 @@ for name, how, path in STEPS:
     prev = None
     for M in path:
         m = moved(G[name], M)
-        if name == "M2 screws":
-            h = ivol(m, union([G[k] for k in installed])) if installed else 0
+        if name == "Lid":
+            h = ivol(moved(LID_RIGID, M), rigid)
+            s = ivol(moved(LID_SNAPS, M), RIGID) + ivol(moved(LID_RIGID, M), SNAPS)
         else:
             h = ivol(m, rigid)
-        s = ivol(m, SNAPS) if name != "M2 screws" else 0
+            s = ivol(m, SNAPS)
         if h > EPS: hard += 1
         if s > EPS:
             snap += 1
@@ -130,7 +129,7 @@ for name, how, path in STEPS:
     installed.append(name)
 
 # ---------- 4. printable parts ----------
-for f in ["case_base", "case_lid", "button_cap", "test_fit"]:
+for f in ["case_base", "case_lid", "button_caps_x2"]:
     m = trimesh.load(os.path.join(ROOT, "stl", f + ".stl"), force="mesh")
     # downward-facing area above the bed = bridges / overhangs that print in air
     n = m.face_normals; c = m.triangles_center

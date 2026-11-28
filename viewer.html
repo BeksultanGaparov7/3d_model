@@ -111,12 +111,12 @@ svg text{font-family:var(--f-mono)}
 <header>
   <span class="eyebrow">Birthday build · ESP32-C3 SuperMini + 2.42″ OLED</span>
   <h1>OLED Gift Box</h1>
-  <p>A pocket-sized desk keepsake that plays animations on a 128×64 display. It runs from its USB-C port or from its own battery, and charges safely when plugged in. Everything below is generated from the same model that the printable files come from.</p>
+  <p>A pocket-sized desk keepsake that plays animations on a 128×64 display. It runs on its own 1000 mAh battery or from USB. This version is built around your measured parts: your M242OLED board, your SuperMini, and your battery with its charger board. Everything below comes from the same model as the print files.</p>
   <div class="specs">
-    <span class="tag">Outside <b>66.1 × 44.1 × 19.4 mm</b></span>
-    <span class="tag">Battery <b>≈ 400 mAh</b></span>
-    <span class="tag">Runtime <b id="headHours">≈ 9 h</b></span>
-    <span class="tag">Screws <b>4 × M2×12</b></span>
+    <span class="tag">Outside <b>77.1 × 48.6 × 18.2 mm</b></span>
+    <span class="tag">Battery <b>1000 mAh</b></span>
+    <span class="tag">Runtime <b id="headHours">≈ 22 h</b></span>
+    <span class="tag">Screws <b>none · snap lid</b></span>
   </div>
 </header>
 
@@ -155,7 +155,7 @@ svg text{font-family:var(--f-mono)}
     <div class="row"><span class="lbl">Parts</span><div class="row" id="partChips"></div></div>
     <div class="row"><span class="lbl">Build</span>
       <button class="chip" id="stepPrev" aria-label="Previous step">◀</button>
-      <input type="range" id="step" min="0" max="11" value="11" aria-label="Assembly step">
+      <input type="range" id="step" min="0" max="9" value="9" aria-label="Assembly step">
       <button class="chip" id="stepNext" aria-label="Next step">▶</button>
       <button class="chip" id="stepPlay">Play build</button>
     </div>
@@ -165,7 +165,7 @@ svg text{font-family:var(--f-mono)}
 
 <section aria-labelledby="hprintparts">
   <h2 id="hprintparts">What you print</h2>
-  <p class="note">These are the exact print files, shown the way they sit on the print bed. Print 4 things: the test piece first, then the base, the lid and 2 button caps.</p>
+  <p class="note">These are the exact files to send to the print service, shown the way they sit on the print bed. Three files: the base, the lid, and one file with both button caps.</p>
   <div class="viewer-wrap">
     <canvas id="pview" aria-label="3D model of the selected print file on the print bed"></canvas>
     <div id="ploading">loading…</div>
@@ -173,10 +173,9 @@ svg text{font-family:var(--f-mono)}
   </div>
   <div class="panel controls">
     <div class="row"><span class="lbl">File</span>
-      <button class="chip" data-pp="test_fit" aria-pressed="false">1 · Test fit</button>
-      <button class="chip" data-pp="case_base" aria-pressed="true">2 · Base</button>
-      <button class="chip" data-pp="case_lid" aria-pressed="false">3 · Lid</button>
-      <button class="chip" data-pp="button_cap" aria-pressed="false">4 · Button caps ×2</button>
+      <button class="chip" data-pp="case_base" aria-pressed="true">case_base.stl</button>
+      <button class="chip" data-pp="case_lid" aria-pressed="false">case_lid.stl</button>
+      <button class="chip" data-pp="button_caps_x2" aria-pressed="false">button_caps_x2.stl</button>
     </div>
     <div class="row"><span class="lbl">Turn</span>
       <button class="chip" id="pFlip" aria-pressed="false">Show upside down</button>
@@ -195,7 +194,14 @@ svg text{font-family:var(--f-mono)}
     <p class="note" style="margin-top:4px">Measured in 0.05 mm steps in every direction until it touches something. 0 means it is pressed against something in that direction.</p>
     <div class="tbl" style="margin-top:10px"><table id="playTbl"><thead><tr><th>Part</th><th>Held by</th><th>Max wiggle</th><th></th></tr></thead><tbody></tbody></table></div>
   </div>
-  <div class="callout"><b>Measure before printing.</b> The model uses published sizes: 61.5 × 39.5 mm for the OLED board, holes 2 mm in from each edge, and 22.5 × 18 mm for the SuperMini. Cheap OLED clones vary by vendor. Print <span class="mono">test_fit.stl</span> first (about 10 min, 2 g of plastic). Lay your OLED on its 4 pins and push a USB-C cable through the wall sample. If anything is off, send me your measurements and I'll regenerate the case.</div>
+  <div class="panel"><h3>Built from your measurements</h3><ul class="clean" style="margin-top:8px">
+    <li>OLED board 72.5 × 44 mm, holes Ø3 mm, centres 2 mm from both edges</li>
+    <li>Glass 62 × 39.5 mm, starting 6 mm from the pin edge and 2 mm from the long edge. It may be up to 5 mm tall: it pokes through the lid window, so the height doesn't matter</li>
+    <li>SuperMini 23 × 18 mm · battery 50 × 22 × 7 mm · charger board 20 × 10 × 3 mm</li>
+  </ul></div>
+  <div class="callout"><b>Two things I assumed, check them before printing:</b><br>
+  1. The OLED's pin header is cut so that it reaches at most <b>4 mm</b> below the board, plastic included (cut the pins about 1.5 mm past the black plastic). The tallest other part on the OLED back is ≤ 3.5 mm.<br>
+  2. On the charger board, the micro-USB's centre is about 4.7 mm from one end of the long edge, and the 3-pin socket at the other end is at most 4 mm tall. That's taken from your photo.</div>
 </section>
 
 <section aria-labelledby="hbat">
@@ -212,8 +218,7 @@ svg text{font-family:var(--f-mono)}
         </select></div>
       <div class="field"><label for="cap">Battery</label>
         <select id="cap">
-          <option value="400" selected>502535 · 400 mAh (fits this case)</option>
-          <option value="1000">603450 · 1000 mAh (case +3 mm thicker, longer)</option>
+          <option value="1000" selected>Your LiPo · 1000 mAh</option>
         </select></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -222,104 +227,95 @@ svg text{font-family:var(--f-mono)}
       <div class="note mono" id="draw"></div>
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
-      <p class="note">On USB the box runs indefinitely. A full charge takes about <b id="chg">1.9 h</b>, at 250 mA.</p>
+      <p class="note">On USB it runs indefinitely. Charging time depends on your charger board; these boards usually charge at 0.5–1 A, so about <b id="chg">1.5–2.5 h</b>.</p>
     </div>
   </div>
   <div class="tbl panel"><table>
     <thead><tr><th>Consumer</th><th>Current</th><th>Where the number comes from</th></tr></thead>
     <tbody>
-      <tr><td>ESP32-C3, WiFi/Bluetooth off</td><td class="num">22 mA @80 MHz<br>28 mA @160 MHz</td><td>Modem-sleep figures (<a href="https://docs.deneyapkart.org/en/Cards/Deneyap-Kart-G/Power-Consumption-esp32-c3.md" target="_blank" rel="noopener">Deneyap measurements</a>). A community bench test gives 22.6 mA at 80 MHz. Sleeping between frames is an estimate.</td></tr>
-      <tr><td>2.42″ OLED panel</td><td class="num">≈ 3 mA idle<br>+ up to ≈ 180 mA all-white</td><td>The panel datasheet gives 18 mA at 13 V for 50 % of pixels on. Its on-board boost converter draws roughly 90 mA from 3.3 V for that. The current grows with the number of lit pixels and with brightness.</td></tr>
-      <tr><td>Regulator, divider, leakage</td><td class="num">≈ 0.5 mA</td><td>Remove the SuperMini's red power LED, which saves about 2–3 mA.</td></tr>
-      <tr><td>Usable battery</td><td class="num">≈ 88 %</td><td>The firmware stops at 3.4 V. The diode and regulator need some headroom, and this also protects the cell.</td></tr>
+      <tr><td>ESP32-C3, WiFi/Bluetooth off</td><td class="num">22 mA @80 MHz<br>28 mA @160 MHz</td><td>Modem-sleep figures (<a href="https://docs.deneyapkart.org/en/Cards/Deneyap-Kart-G/Power-Consumption-esp32-c3.md" target="_blank" rel="noopener">Deneyap measurements</a>). Sleeping between frames is an estimate.</td></tr>
+      <tr><td>2.42″ OLED panel</td><td class="num">≈ 3 mA idle<br>+ up to ≈ 180 mA all-white</td><td>The panel draws 18 mA at 13 V with 50 % of pixels on. The board's own boost converter (the coil and SS14 on its back) turns that into roughly 90 mA from 3.3 V.</td></tr>
+      <tr><td>Regulator, leakage</td><td class="num">≈ 0.5 mA</td><td>Remove the SuperMini's red power LED to save another 2–3 mA.</td></tr>
+      <tr><td>Usable battery</td><td class="num">≈ 88 %</td><td>The diode and the regulator need some headroom, and the battery's protection board cuts off before the cell is empty.</td></tr>
     </tbody></table></div>
-  <p class="note">The OLED is the biggest consumer. Dark backgrounds with thin lines and a medium brightness can easily double the runtime. Another option is a sleep mode that wakes on a button press. In deep sleep the box draws about 0.05 mA, so a charge then lasts for months.</p>
+  <p class="note">Dark backgrounds with thin lines at medium brightness can easily double the runtime.</p>
 </section>
 
 <section aria-labelledby="hwire">
   <h2 id="hwire">Wiring</h2>
   <div class="panel">
-    <h3>Power: one USB-C port does everything</h3>
-    <p class="note" style="margin-top:4px">USB-C goes into the SuperMini. Its 5 V pin feeds the charger and the regulator. The battery joins through a diode, so it only takes over when USB is unplugged. While plugged in, the battery just charges, and the charger stops at 4.2 V. The battery is not discharged and recharged over and over.</p>
+    <h3>Power: one USB-C cable runs the box and charges the battery</h3>
+    <p class="note" style="margin-top:4px">USB-C goes into the SuperMini. Its 5 V pin also feeds your charger board's input, so plugging in charges the battery. The battery side joins the 5 V pin through a diode. That way the battery powers the box only when USB is unplugged, and USB never pushes current backwards into the battery. The micro-USB on the charger board still works as a second way to charge.</p>
     <div class="diagram" style="margin-top:12px">
-    <svg viewBox="0 0 640 250" role="img" aria-label="Power wiring diagram">
-      <defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker></defs>
+    <svg viewBox="0 0 640 230" role="img" aria-label="Power wiring diagram">
       <g fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4">
-        <rect x="10" y="20" width="150" height="120" rx="8"/>
-        <rect x="230" y="20" width="160" height="90" rx="8"/>
-        <rect x="470" y="20" width="150" height="60" rx="8"/>
-        <rect x="230" y="160" width="80" height="44" rx="6"/>
-        <rect x="350" y="160" width="70" height="44" rx="6"/>
-        <rect x="470" y="150" width="150" height="80" rx="8"/>
+        <rect x="10" y="20" width="160" height="110" rx="8"/>
+        <rect x="260" y="20" width="180" height="110" rx="8"/>
+        <rect x="510" y="20" width="120" height="70" rx="8"/>
+        <rect x="260" y="160" width="90" height="44" rx="6"/>
       </g>
       <g fill="var(--ink)" font-size="12">
         <text x="20" y="40" font-weight="600">ESP32-C3 SuperMini</text>
-        <text x="20" y="62" fill="var(--muted)">USB-C ◀ cable</text>
-        <text x="20" y="88">5V pin</text><text x="20" y="108">GND</text><text x="20" y="128">GPIO3 (ADC)</text>
-        <text x="240" y="40" font-weight="600">TP4056 + DW01</text>
-        <text x="240" y="60">IN+  IN−</text><text x="240" y="80">B+   B−</text><text x="240" y="100">OUT+ OUT−</text>
-        <text x="480" y="42" font-weight="600">LiPo 502535</text><text x="480" y="62" fill="var(--muted)">3.7 V · 400 mAh</text>
-        <text x="240" y="180" font-weight="600">Slide sw.</text><text x="240" y="196" fill="var(--muted)">ON/OFF</text>
-        <text x="360" y="180" font-weight="600">SS14</text><text x="360" y="196" fill="var(--muted)">diode</text>
-        <text x="480" y="170" font-weight="600">Divider</text><text x="480" y="188" fill="var(--muted)">100k / 100k</text><text x="480" y="206" fill="var(--muted)">→ GPIO3 reads</text><text x="480" y="222" fill="var(--muted)">battery voltage</text>
+        <text x="20" y="60" fill="var(--muted)">USB-C ◀ cable</text>
+        <text x="20" y="88">5V pin</text><text x="20" y="112">GND</text>
+        <text x="270" y="40" font-weight="600">Your charger board</text>
+        <text x="270" y="60" fill="var(--muted)">micro-USB · 3-pin socket</text>
+        <text x="270" y="84">5 V input  (+ / −)</text><text x="270" y="104">output (+ / −)</text><text x="270" y="122">B+ / B−</text>
+        <text x="520" y="42" font-weight="600">Your LiPo</text><text x="520" y="62" fill="var(--muted)">3.7 V · 1000 mAh</text>
+        <text x="270" y="180" font-weight="600">Diode</text><text x="270" y="196" fill="var(--muted)">SS14 / 1N5817</text>
       </g>
       <g fill="none" stroke-width="2">
-        <path d="M160 84 H200 V56 H230" stroke="#d9534f"/>
-        <path d="M160 104 H210 V64 H230" stroke="var(--ink)"/>
-        <path d="M390 76 H430 V46 H470" stroke="#d9534f"/>
-        <path d="M390 84 H440 V62 H470" stroke="var(--ink)"/>
-        <path d="M390 96 H450 V140 H270 V160" stroke="#e08a2c"/>
-        <path d="M310 182 H350" stroke="#e08a2c"/>
-        <path d="M385 204 V230 H180 V90 H160" stroke="#d9534f" marker-end="url(#arr)"/>
-        <path d="M325 182 V145 H545 V150" stroke="#e08a2c" stroke-dasharray="4 3"/>
-        <path d="M470 220 H440 V236 H190 V124 H160" stroke="var(--pixel)" stroke-dasharray="4 3"/>
+        <path d="M170 84 H260" stroke="#d9534f"/>
+        <path d="M170 108 H220 V140 H460 V100 H440" stroke="var(--ink)"/>
+        <path d="M440 118 H480 V50 H510" stroke="#d9534f"/>
+        <path d="M440 100 H460" stroke="var(--ink)"/>
+        <path d="M440 98 H470 V182 H350" stroke="#e08a2c"/>
+        <path d="M260 182 H200 V84 H170" stroke="#e08a2c"/>
       </g>
       <g font-size="10" fill="var(--muted)">
-        <text x="168" y="78">5 V in</text><text x="398" y="70">charge</text><text x="200" y="244">battery → 5V pin (only when USB unplugged)</text>
+        <text x="186" y="78">5 V</text><text x="355" y="176">anode</text><text x="205" y="176">stripe (cathode)</text>
+        <text x="20" y="222">GND is shared: SuperMini GND = board output − = board input −</text>
       </g>
     </svg>
     </div>
   </div>
+  <div class="callout"><b>First, find out which pads are which on your charger board.</b> The battery is already on B+/B−. Then check C+/C− with a multimeter:<br>
+  • Micro-USB unplugged: 3.7–4.2 V on C+/C− → C+/C− is the battery <b>output</b>. The 5 V input is then the micro-USB's VBUS pin.<br>
+  • 0 V, but about 5 V when a charger is plugged into the micro-USB → C+/C− is the <b>5 V input</b>.<br>
+  Measure the 3 socket pins the same way: one of them is probably the output.<br>
+  Send me what you measure and I'll tell you exactly where each wire goes.</div>
   <div class="two">
-    <div class="panel tbl"><h3>OLED (7-pin SPI) → SuperMini</h3><table style="margin-top:8px">
-      <thead><tr><th>OLED</th><th>SuperMini</th></tr></thead><tbody>
+    <div class="panel tbl"><h3>OLED → SuperMini</h3><table style="margin-top:8px">
+      <thead><tr><th>OLED pin</th><th>SuperMini</th></tr></thead><tbody>
       <tr><td>GND</td><td class="num">GND</td></tr><tr><td>VCC</td><td class="num">3V3</td></tr>
-      <tr><td>SCL / SCK</td><td class="num">GPIO4</td></tr><tr><td>SDA / MOSI</td><td class="num">GPIO6</td></tr>
+      <tr><td>SCL</td><td class="num">GPIO4</td></tr><tr><td>SDA</td><td class="num">GPIO6</td></tr>
       <tr><td>RES</td><td class="num">GPIO10</td></tr><tr><td>DC</td><td class="num">GPIO5</td></tr><tr><td>CS</td><td class="num">GPIO7</td></tr>
       </tbody></table></div>
-    <div class="panel tbl"><h3>Buttons and sensing</h3><table style="margin-top:8px">
+    <div class="panel tbl"><h3>Buttons</h3><table style="margin-top:8px">
       <thead><tr><th>From</th><th>To</th></tr></thead><tbody>
       <tr><td>Button A</td><td class="num">GPIO0 ↔ GND</td></tr><tr><td>Button B</td><td class="num">GPIO1 ↔ GND</td></tr>
-      <tr><td>Divider middle</td><td class="num">GPIO3</td></tr>
-      <tr><td colspan="2" class="note">Both buttons use the internal pull-ups. GPIO0 and GPIO1 can wake the chip from deep sleep. The pins the chip checks at boot (GPIO2, 8 and 9) are left free.</td></tr>
+      <tr><td colspan="2" class="note">Both use the internal pull-ups. GPIO0 and GPIO1 can also wake the chip from deep sleep.</td></tr>
       </tbody></table></div>
   </div>
-  <div class="callout"><b>One small change on the charger board:</b> TP4056 boards come set to 1 A, which is too much for a 400 mAh cell. Replace the resistor marked <span class="mono">R3</span> or <span class="mono">RPROG</span> (usually “122” = 1.2 kΩ) with a 4.7 kΩ resistor. That gives about 250 mA, which is gentle and runs cool. The charger's own USB port stays unused.</div>
 </section>
 
 <section aria-labelledby="hbuild">
   <h2 id="hbuild">Build order</h2>
   <div class="panel"><ol class="steps" id="steps"></ol>
-  <p class="note" style="margin-top:10px">Solder all wires before step 1. Use 30 AWG silicone wire and keep each one just long enough to reach. Cut the button and switch legs short and solder the wires straight to them.</p></div>
+  <p class="note" style="margin-top:10px">Before step 1: pull the black plastic strip off the SuperMini’s pin header and cut the pins flush. Cut the OLED’s pins about 1.5 mm past their plastic. Then solder all the wires. Thin wire stripped from your jumper wires works fine. Keep each wire just long enough to reach.</p></div>
 </section>
 
 <section aria-labelledby="hbom">
   <h2 id="hbom">Shopping list</h2>
   <div class="panel tbl"><table>
     <thead><tr><th>Qty</th><th>Part</th><th>Notes</th></tr></thead><tbody>
-    <tr><td class="num">1</td><td>ESP32-C3 SuperMini</td><td>Buy it without the pin headers soldered on</td></tr>
-    <tr><td class="num">1</td><td>2.42″ OLED 128×64, SSD1309, 7-pin SPI</td><td>White or blue. Get the version without a soldered header if you can</td></tr>
-    <tr><td class="num">1</td><td>LiPo 502535, 3.7 V, about 400 mAh</td><td>35 × 25 × 5 mm, with built-in protection board</td></tr>
-    <tr><td class="num">1</td><td>TP4056 USB-C charger board with protection (DW01 + 8205)</td><td>28 × 17 mm. Change R3 to 4.7 kΩ</td></tr>
-    <tr><td class="num">1</td><td>Schottky diode SS14 (or 1N5817)</td><td>Battery → 5V pin</td></tr>
-    <tr><td class="num">2</td><td>100 kΩ resistors</td><td>Battery voltage divider</td></tr>
-    <tr><td class="num">1</td><td>4.7 kΩ resistor (0603 or through-hole)</td><td>Sets the charge current</td></tr>
-    <tr><td class="num">1</td><td>Small perfboard scrap, about 10 × 5 mm</td><td>Holds the diode and the divider</td></tr>
-    <tr><td class="num">2</td><td>Tactile switch 6 × 6 × 5 mm, through-hole</td><td>Standard 4-leg click buttons</td></tr>
-    <tr><td class="num">1</td><td>Slide switch SS12D00G4</td><td>Lever 4 mm</td></tr>
-    <tr><td class="num">4</td><td>M2 × 12 countersunk screws</td><td>Self-tapping, or machine screws that cut their own thread</td></tr>
-    <tr><td class="num">—</td><td>1 mm foam tape, 30 AWG silicone wire, heat-shrink</td><td></td></tr>
+    <tr><td class="num">✓</td><td>ESP32-C3 SuperMini, 2.42″ OLED, LiPo with charger board</td><td>You already have these</td></tr>
+    <tr><td class="num">2</td><td>Tactile button 6 × 6 × 5 mm, 4 legs</td><td>The cheapest kind. Old electronics often have them too</td></tr>
+    <tr><td class="num">1</td><td>Schottky diode SS14, 1N5817 or 1N5819</td><td>Needed. Without it, USB would push current straight into the battery</td></tr>
+    <tr><td class="num">—</td><td>Wire</td><td>Strip your jumper wires</td></tr>
+    <tr><td class="num">—</td><td>3D print (3 files)</td><td>About 240 som at your service</td></tr>
     </tbody></table></div>
+  <p class="note">No screws: the OLED sits on 4 printed pegs and the lid clicks on. No power switch either: the firmware turns the box off with a long press of a button (deep sleep). In deep sleep the box still draws a little, roughly 0.1–1 mA because of the OLED board's own power circuit, so a full battery lasts weeks to months while "off". If you want a real on/off switch later, an SS12D00 slide switch costs a few som and I can add a slot for it.</p>
 </section>
 
 <section aria-labelledby="hprint">
@@ -330,7 +326,8 @@ svg text{font-family:var(--f-mono)}
       <li>PLA or PETG, 0.2 mm layers (0.12 mm on the lid looks nicer)</li>
       <li>3 walls, 20 % infill, <b>no supports</b></li>
       <li>Base: open side up. Lid: display side down on the bed</li>
-      <li>Button caps: flange down, print 2</li>
+      <li>Button caps: flange down (the file already has both)</li>
+      <li>Units are mm. Tell the service not to scale the files</li>
       <li>The model has 0.15–0.3 mm clearances. If your printer over-extrudes, lower the flow by 2–3 %</li>
     </ul></div>
   </div>
@@ -345,33 +342,31 @@ svg text{font-family:var(--f-mono)}
 const CASE = {col:"#b9a4e8"};
 const P = [
  // file, group, colour, metal?, explode vector
- ["base","case","CASE",0,[0,0,0]], ["lid","lid","CASE",0,[0,0,34]], ["caps","caps","#f7f7f4",0,[0,9,0]],
+ ["base","case","CASE",0,[0,0,0]], ["lid","lid","CASE",0,[0,0,30]], ["caps","caps","#f7f7f4",0,[0,9,0]],
  ["snaps","snaps","#ff8a00",0,[0,0,0]],
- ["oled_pcb","oled","#2b5fb8",0,[0,0,22]], ["oled_glass","oled","#121419",2,[0,0,22]], ["oled_back","oled","#262626",0,[0,0,22]],
- ["oled_pads","oled","#d4a84b",1,[0,0,22]],
- ["mcu_pcb","mcu","#23407f",0,[-6,0,10]], ["mcu_pads","mcu","#d4a84b",1,[-6,0,10]], ["mcu_usb","mcu","#c9cdd2",1,[-6,0,10]],
- ["mcu_chip","mcu","#1b1b1b",0,[-6,0,10]], ["mcu_parts","mcu","#3a3a3a",0,[-6,0,10]],
- ["battery","bat","#c3c7cf",1,[0,0,15]], ["bat_foam","bat","#2e2e2e",0,[0,0,18]],
- ["chg_pcb","chg","#2f6fd1",0,[0,0,5]], ["chg_usb","chg","#c9cdd2",1,[0,0,5]], ["chg_chips","chg","#1b1b1b",0,[0,0,5]], ["chg_pads","chg","#e0e0e0",1,[0,0,5]],
+ ["oled_pcb","oled","#2b5fb8",0,[0,0,20]], ["oled_glass","oled","#121419",2,[0,0,20]], ["oled_back","oled","#262626",0,[0,0,20]],
+ ["oled_hdr","oled","#1d1d1d",0,[0,0,20]],
+ ["mcu_pcb","mcu","#1a1a1a",0,[-6,0,10]], ["mcu_pads","mcu","#d4a84b",1,[-6,0,10]], ["mcu_usb","mcu","#c9cdd2",1,[-6,0,10]],
+ ["mcu_chip","mcu","#2e2e2e",0,[-6,0,10]], ["mcu_parts","mcu","#c9cdd2",1,[-6,0,10]],
+ ["battery","bat","#c3c7cf",1,[0,-4,12]], ["bat_foam","bat","#2e2e2e",0,[0,-4,15]],
+ ["cb_pcb","cb","#2f8a4c",0,[6,0,6]], ["cb_usb","cb","#c9cdd2",1,[6,0,6]], ["cb_sw","cb","#1b1b1b",0,[6,0,6]],
+ ["cb_chips","cb","#1b1b1b",0,[6,0,6]],
  ["buttons_body","btn","#222",0,[0,4,6]], ["buttons_top","btn","#c9cdd2",1,[0,4,6]], ["buttons_stem","btn","#3a3a3a",0,[0,4,6]],
- ["sw_body","sw","#222",0,[0,-6,4]], ["sw_lever","sw","#e6e6e6",0,[0,-6,4]],
- ["powerpath","pp","#3f8f4a",0,[0,-3,7]], ["screws","screws","#a7adb5",1,[0,0,48]],
+ ["diode","dio","#e08a2c",0,[0,0,8]],
 ];
 const GROUP = {
  case:["Case base","Holds everything. Printed open side up."],
- lid:["Lid","Display window. Its skirt drops inside the walls. Printed face down."],
+ lid:["Lid","Clicks on with 5 small bumps. The glass shows through the window."],
  caps:["Button caps","Printed. The flange sits inside the wall and the plunger sticks out 1 mm."],
  snaps:["Snap clips","Flexible hooks and nubs that click over the parts."],
- oled:["2.42″ OLED module","61.5 × 39.5 mm board. Clamped by the 4 case screws."],
- mcu:["ESP32-C3 SuperMini","22.5 × 18 mm. Its USB-C socket sits in a wall pocket under a lip."],
- bat:["LiPo 502535 + foam pad","35 × 25 × 5 mm in a 4-wall pocket. The foam takes up the last gap."],
- chg:["TP4056 charger","28 × 17 mm in a floor pocket under the battery."],
- btn:["6 × 6 tactile switches","Pressed sideways through the top wall."],
- sw:["Slide power switch","SS12D00G4. Cuts the battery, while USB still powers the box."],
- pp:["Diode + divider board","SS14 diode and 2 × 100k resistors on a scrap of perfboard."],
- screws:["4 × M2×12 screws","They go through the lid and the OLED into the bosses."],
+ oled:["M242OLED 2.42″ display","72.5 × 44 mm board. Its 4 holes sit on printed pegs."],
+ mcu:["ESP32-C3 SuperMini","23 × 18 mm. Its USB-C socket sits in a wall pocket under a lip."],
+ bat:["Your 1000 mAh LiPo","50 × 22 × 7 mm, in a pocket along the front wall."],
+ cb:["Your charger board","20 × 10 mm. Its micro-USB sits in the right wall, so it can still be used for charging."],
+ btn:["6 × 6 tactile buttons","Pressed sideways through the back wall."],
+ dio:["Diode (SS14)","Lets the battery feed the 5 V pin, but never the other way."],
 };
-const STEPS = [["base"],["mcu"],["pp"],["sw"],["caps"],["btn"],["chg"],["bat"],["bat"],["oled"],["lid"],["screws"]];
+const STEPS = [["case"],["mcu"],["cb"],["dio"],["bat"],["bat"],["caps"],["btn"],["oled"],["lid"]];
 const STEP_NAMES = ["Empty base"];
 
 const cv = document.getElementById("view");
@@ -384,11 +379,11 @@ const cam = new THREE.PerspectiveCamera(35,1,1,2000);
 cam.up.set(0,0,1);
 const controls = new THREE.OrbitControls(cam, cv);
 controls.enableDamping = true;
-const C0 = new THREE.Vector3(33,22,9);
+const C0 = new THREE.Vector3(38.5,24.3,8);
 function resetCam(){
   const a = Math.max(cv.clientWidth,1)/Math.max(cv.clientHeight,1);
   const d = 1.0*Math.max(1, 1.25/a);           // back off on narrow (phone) screens
-  cam.position.set(33+62*d, 22-82*d, 9+74*d); controls.target.copy(C0); controls.update(); }
+  cam.position.set(38.5+70*d, 24.3-92*d, 8+82*d); controls.target.copy(C0); controls.update(); }
 resetCam();
 scene.add(new THREE.HemisphereLight(0xffffff,0x8088a0,0.85));
 const key = new THREE.DirectionalLight(0xffffff,0.75); key.position.set(80,-60,140); scene.add(key);
@@ -422,9 +417,9 @@ function addScreen(){
   const g = new THREE.PlaneGeometry(55.01,27.49);
   const m = new THREE.MeshBasicMaterial({map:tex, clippingPlanes:[clip]});
   m.toneMapped = false;
-  const s = new THREE.Mesh(g,m); s.position.set(33.05,22.05,17.61);
+  const s = new THREE.Mesh(g,m); s.position.set(39.3,24.05,18.01);
   s.userData.group="oled"; scene.add(s);
-  meshes.push({mesh:s, group:"oled", ex:new THREE.Vector3(0,0,22), base:s.position.clone()});
+  meshes.push({mesh:s, group:"oled", ex:new THREE.Vector3(0,0,20), base:s.position.clone()});
 }
 addScreen();
 
@@ -450,9 +445,9 @@ fetch("parts.json").then(r=>r.json()).then(data=>{
 }).catch(()=>{ document.getElementById("loading").textContent="Couldn't load the 3D parts. Reload the page to try again."; });
 
 // --------------- state ---------------
-const st = {xray:false, nolid:false, snaps:false, explode:0, cut:"off", cutPos:45, step:11, hidden:new Set(), anim:null};
+const st = {xray:false, nolid:false, snaps:false, explode:0, cut:"off", cutPos:45, step:9, hidden:new Set(), anim:null};
 const chipsEl = document.getElementById("partChips");
-["oled","mcu","bat","chg","btn","sw","pp","screws"].forEach(g=>{
+["oled","mcu","bat","cb","btn","dio"].forEach(g=>{
   const b=document.createElement("button"); b.className="chip"; b.textContent=GROUP[g][0].replace(" + foam pad","");
   b.setAttribute("aria-pressed","true");
   b.onclick=()=>{ if(st.hidden.has(g)) st.hidden.delete(g); else st.hidden.add(g); b.setAttribute("aria-pressed", String(!st.hidden.has(g))); apply(); };
@@ -482,7 +477,7 @@ function apply(){
   clip.constant = 1e5;
   const cl = document.getElementById("cutLbl");
   if (st.cut!=="off"){
-    const ax = {x:[0,66.1,new THREE.Vector3(-1,0,0)], y:[0,44.1,new THREE.Vector3(0,-1,0)], z:[0,19.4,new THREE.Vector3(0,0,-1)]}[st.cut];
+    const ax = {x:[0,77.1,new THREE.Vector3(-1,0,0)], y:[0,48.6,new THREE.Vector3(0,-1,0)], z:[0,18.2,new THREE.Vector3(0,0,-1)]}[st.cut];
     const v = ax[0] + (ax[1]-ax[0])*st.cutPos/100;
     clip.normal.copy(ax[2]); clip.constant = v;
     cl.textContent = st.cut+" = "+v.toFixed(1)+" mm";
@@ -492,9 +487,9 @@ function press(id, on){ document.getElementById(id).setAttribute("aria-pressed",
 document.getElementById("vXray").onclick=()=>{ st.xray=!st.xray; press("vXray",st.xray); apply(); };
 document.getElementById("vNoLid").onclick=()=>{ st.nolid=!st.nolid; press("vNoLid",st.nolid); apply(); };
 document.getElementById("vSnaps").onclick=()=>{ st.snaps=!st.snaps; press("vSnaps",st.snaps); apply(); };
-document.getElementById("vAssembled").onclick=()=>{ Object.assign(st,{xray:false,nolid:false,snaps:false,explode:0,cut:"off",step:11});
+document.getElementById("vAssembled").onclick=()=>{ Object.assign(st,{xray:false,nolid:false,snaps:false,explode:0,cut:"off",step:9});
   st.hidden.clear(); chipsEl.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed","true"));
-  ["vXray","vNoLid","vSnaps"].forEach(i=>press(i,false)); document.getElementById("explode").value=0; document.getElementById("step").value=11;
+  ["vXray","vNoLid","vSnaps"].forEach(i=>press(i,false)); document.getElementById("explode").value=0; document.getElementById("step").value=9;
   setCut("off"); showStep(); apply(); };
 document.getElementById("vReset").onclick=resetCam;
 document.getElementById("explode").oninput=e=>{ st.explode=+e.target.value; apply(); };
@@ -517,7 +512,7 @@ function showStep(){
   else { const a = checks.assembly[s-1]; stepText.innerHTML = "<b>Step "+s+" · "+a.part+".</b> "+a.how+(a.ok?' <span class="pill">clear path</span>':' <span class="pill warn">blocked</span>'); }
 }
 function goStep(s, animate){
-  st.step = Math.max(0, Math.min(11, s)); stepEl.value = st.step; showStep();
+  st.step = Math.max(0, Math.min(9, s)); stepEl.value = st.step; showStep();
   if (animate && st.step>0){
     const g = STEPS[st.step][0]; const t0 = performance.now();
     st.anim = {group:g, k:1.4};
@@ -532,7 +527,7 @@ let playing=null;
 document.getElementById("stepPlay").onclick=()=>{
   if (playing){ clearInterval(playing); playing=null; document.getElementById("stepPlay").textContent="Play build"; return; }
   document.getElementById("stepPlay").textContent="Stop"; goStep(0,false); let s=0;
-  playing=setInterval(()=>{ s++; goStep(s,true); if(s>=11){ clearInterval(playing); playing=null; document.getElementById("stepPlay").textContent="Play build"; } }, 1300);
+  playing=setInterval(()=>{ s++; goStep(s,true); if(s>=9){ clearInterval(playing); playing=null; document.getElementById("stepPlay").textContent="Play build"; } }, 1300);
 };
 
 // --------------- picking ---------------
@@ -571,7 +566,7 @@ function calc(){
   const parts = [["Processor",cpu,css.getPropertyValue("--accent")],["OLED",oled,css.getPropertyValue("--pixel")],["Other",other,css.getPropertyValue("--muted")]];
   $("bar").innerHTML = parts.map(p=>'<i style="width:'+(100*p[1]/tot)+'%;background:'+p[2]+'"></i>').join("");
   $("legend").innerHTML = parts.map(p=>'<span style="--c:'+p[2]+'">'+p[0]+' '+p[1].toFixed(0)+' mA</span>').join("");
-  $("chg").textContent = (cap*1.15/250).toFixed(1)+" h";
+  
 }
 ["lit","con","cpu","cap"].forEach(i=>$(i).addEventListener("input",calc)); calc();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", calc);
@@ -595,20 +590,18 @@ fetch("checks.json").then(r=>r.json()).then(d=>{
     return "<tr><td>"+r.part+"</td><td>"+r.held_by+"</td><td class='num'>"+mx.toFixed(2)+" mm</td><td>"+(mx<=0.5?"<span class='pill'>locked</span>":"<span class='pill warn'>loose</span>")+"</td></tr>";
   }).join("");
   $("steps").innerHTML = d.assembly.map(a=>"<li><b>"+a.part+".</b> "+a.how+(a.snap_steps?" <span class='pill'>clicks in</span>":"")+"</li>").join("");
-  const how = {"case_base.stl":"open side up","case_lid.stl":"display side down","button_cap.stl":"×2, flange down","test_fit.stl":"print first"};
+  const how = {"case_base.stl":"open side up","case_lid.stl":"display side down","button_caps_x2.stl":"flanges down (both caps in one file)"};
   document.querySelector("#printTbl tbody").innerHTML = d.print.map(p=>"<tr><td class='num'>"+p.file+"</td><td class='num'>"+p.size.join(" × ")+"</td><td>"+how[p.file]+"</td></tr>").join("");
 }).catch(()=>{ $("verdict").innerHTML='<p class="note">Couldn\'t load the check results. Reload the page to try again.</p>'; });
 
 // --------------- print-file viewer ---------------
 const PINFO = {
-  test_fit:{name:"Test fit", qty:1, place:"Flat plate down. The small USB-C wall sample stands upright beside it.",
-    what:"A quick check before the big print. Lay your OLED on the 4 pins. The pins should pass through the board's holes and the window should line up with the pixels. Then push your USB-C cable through the wall sample."},
   case_base:{name:"Case base", qty:1, place:"Open side up, flat bottom on the bed.",
-    what:"Holds all the electronics. Inside you'll see the USB-C pocket in the left wall, the SuperMini cradle with 2 hooks, the battery shelf with the charger pocket under it, the 2 button pockets, the switch pocket, and the 4 screw posts."},
-  case_lid:{name:"Lid", qty:1, place:"Display side DOWN on the bed (it's shown that way). The screw countersinks face the bed.",
-    what:"The front of the box. The window shows the display. Underneath are 4 short posts that press the OLED down, and a thin skirt that slides inside the base walls. Tap 'Show upside down' to see it as it sits on the box."},
-  button_cap:{name:"Button caps", qty:2, place:"Square flange down. Print 2.",
-    what:"These go inside the wall, in front of each tactile switch. The flange stops them falling out and the round plunger sticks out 1 mm for your finger."},
+    what:"Holds all the electronics. Inside you can see the USB-C pocket in the left wall, the SuperMini cradle with 2 hooks, the battery pocket along the front wall, the charger pocket with its micro-USB opening in the right wall, the 2 button pockets in the back wall, and the 4 posts with pegs for the OLED. The post above the SuperMini hangs from the corner walls."},
+  case_lid:{name:"Lid", qty:1, place:"Display side DOWN on the bed (shown that way).",
+    what:"A frame around the glass. Underneath are 4 short posts that press the OLED onto its pegs, and a thin skirt with 5 bumps that click into grooves in the base walls. Tap 'Show upside down' to see it as it sits on the box."},
+  button_caps_x2:{name:"Button caps", qty:1, place:"Square flanges down. The file already contains both caps.",
+    what:"They sit inside the back wall, in front of each tactile switch. The flange keeps them from falling out and the round plunger sticks out 1 mm for your finger."},
 };
 (function(){
   const cv2 = document.getElementById("pview");

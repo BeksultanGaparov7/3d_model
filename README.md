@@ -1,28 +1,20 @@
 # OLED Gift Box
 
-A compact 3D-printed case for an **ESP32-C3 SuperMini** and a **2.42" SSD1309 128×64 OLED**, with a 400 mAh LiPo, a TP4056 charger, two 6×6 buttons and a slide switch. It runs from the SuperMini's own USB-C port or from the battery.
+A 3D-printed case for an **ESP32-C3 SuperMini** and an **M242OLED 2.42" SSD1309 128×64 OLED** (72.5 × 44 mm board), with a 1000 mAh LiPo (50 × 22 × 7 mm) and its own micro-USB charger board, plus two 6×6 buttons. Snap-on lid, no screws.
 
-Outside size: **66.1 × 44.1 × 19.4 mm**.
+Outside size: **77.1 × 48.6 × 18.2 mm**.
 
 ## Files to print (`stl/`)
 | File | Orientation | Notes |
 |---|---|---|
-| `test_fit.stl` | flat | Print first (~10 min). Check the OLED hole pattern and the USB-C plug opening |
 | `case_base.stl` | open side up | No supports |
 | `case_lid.stl` | display side down | 0.12 mm layers look nicest |
-| `button_cap.stl` | flange down | Print 2 |
+| `button_caps_x2.stl` | flanges down | Both caps in one file |
 
 PLA or PETG, 0.2 mm layers, 3 walls, 20 % infill, no supports.
 
 ## Power
-USB-C → SuperMini 5V pin → TP4056 IN+. The battery output goes TP4056 OUT+ → slide switch → SS14 diode → 5V pin, so the battery only powers the box when USB is unplugged. While plugged in, the battery only charges and the charger stops at 4.2 V. Change the TP4056's R3/RPROG to 4.7 kΩ (about 250 mA). Expect about 9 h of animation per charge with typical settings. The interactive page has a calculator.
-
-| OLED | SuperMini | | Other | SuperMini |
-|---|---|---|---|---|
-| GND / VCC | GND / 3V3 | | Button A | GPIO0 ↔ GND |
-| SCK | GPIO4 | | Button B | GPIO1 ↔ GND |
-| MOSI (SDA) | GPIO6 | | Battery divider 100k/100k | GPIO3 |
-| RES / DC / CS | GPIO10 / GPIO5 / GPIO7 | | | |
+USB-C → SuperMini 5V pin → charger board 5 V input. Battery output → SS14 diode → 5V pin, so USB never back-feeds the battery. See the interactive page for the pad-identification test and the pin table (OLED SPI: SCK GPIO4, MOSI GPIO6, RES GPIO10, DC GPIO5, CS GPIO7; buttons GPIO0/GPIO1 to GND).
 
 ## Changing sizes
 All sizes are variables at the top of `case.scad`. Measure your OLED board, its hole positions, the glass size and the battery, then rebuild:
