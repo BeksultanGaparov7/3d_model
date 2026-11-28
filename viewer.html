@@ -79,6 +79,11 @@ td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:n
 .calc > *{min-width:0}
 select{max-width:100%;width:100%}
 [hidden]{display:none!important}
+#pview{display:block;width:100%;height:min(52vh,440px);touch-action:none}
+#ploading{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);color:var(--muted)}
+.pinfo{display:flex;flex-direction:column;gap:8px}
+.pinfo .facts{display:flex;flex-wrap:wrap;gap:8px}
+.pinfo p{font-size:.92rem}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:.85rem;display:flex;justify-content:space-between;gap:8px}
 .field label output{font-family:var(--f-mono)}
@@ -155,6 +160,29 @@ svg text{font-family:var(--f-mono)}
       <button class="chip" id="stepPlay">Play build</button>
     </div>
     <div id="stepText" class="note"></div>
+  </div>
+</section>
+
+<section aria-labelledby="hprintparts">
+  <h2 id="hprintparts">What you print</h2>
+  <p class="note">These are the exact print files, shown the way they sit on the print bed. Print 4 things: the test piece first, then the base, the lid and 2 button caps.</p>
+  <div class="viewer-wrap">
+    <canvas id="pview" aria-label="3D model of the selected print file on the print bed"></canvas>
+    <div id="ploading">loading…</div>
+    <div class="hint">drag to rotate · pinch to zoom · grid = 10 mm</div>
+  </div>
+  <div class="panel controls">
+    <div class="row"><span class="lbl">File</span>
+      <button class="chip" data-pp="test_fit" aria-pressed="false">1 · Test fit</button>
+      <button class="chip" data-pp="case_base" aria-pressed="true">2 · Base</button>
+      <button class="chip" data-pp="case_lid" aria-pressed="false">3 · Lid</button>
+      <button class="chip" data-pp="button_cap" aria-pressed="false">4 · Button caps ×2</button>
+    </div>
+    <div class="row"><span class="lbl">Turn</span>
+      <button class="chip" id="pFlip" aria-pressed="false">Show upside down</button>
+      <button class="chip" id="pReset">Reset camera</button>
+    </div>
+    <div id="pInfo" class="pinfo"></div>
   </div>
 </section>
 
@@ -570,5 +598,81 @@ fetch("checks.json").then(r=>r.json()).then(d=>{
   const how = {"case_base.stl":"open side up","case_lid.stl":"display side down","button_cap.stl":"×2, flange down","test_fit.stl":"print first"};
   document.querySelector("#printTbl tbody").innerHTML = d.print.map(p=>"<tr><td class='num'>"+p.file+"</td><td class='num'>"+p.size.join(" × ")+"</td><td>"+how[p.file]+"</td></tr>").join("");
 }).catch(()=>{ $("verdict").innerHTML='<p class="note">Couldn\'t load the check results. Reload the page to try again.</p>'; });
+
+// --------------- print-file viewer ---------------
+const PINFO = {
+  test_fit:{name:"Test fit", qty:1, place:"Flat plate down. The small USB-C wall sample stands upright beside it.",
+    what:"A quick check before the big print. Lay your OLED on the 4 pins. The pins should pass through the board's holes and the window should line up with the pixels. Then push your USB-C cable through the wall sample."},
+  case_base:{name:"Case base", qty:1, place:"Open side up, flat bottom on the bed.",
+    what:"Holds all the electronics. Inside you'll see the USB-C pocket in the left wall, the SuperMini cradle with 2 hooks, the battery shelf with the charger pocket under it, the 2 button pockets, the switch pocket, and the 4 screw posts."},
+  case_lid:{name:"Lid", qty:1, place:"Display side DOWN on the bed (it's shown that way). The screw countersinks face the bed.",
+    what:"The front of the box. The window shows the display. Underneath are 4 short posts that press the OLED down, and a thin skirt that slides inside the base walls. Tap 'Show upside down' to see it as it sits on the box."},
+  button_cap:{name:"Button caps", qty:2, place:"Square flange down. Print 2.",
+    what:"These go inside the wall, in front of each tactile switch. The flange stops them falling out and the round plunger sticks out 1 mm for your finger."},
+};
+(function(){
+  const cv2 = document.getElementById("pview");
+  const r2 = new THREE.WebGLRenderer({canvas:cv2, antialias:true, alpha:true});
+  r2.setPixelRatio(Math.min(window.devicePixelRatio,2)); r2.outputEncoding = THREE.sRGBEncoding;
+  const sc = new THREE.Scene(); const cm = new THREE.PerspectiveCamera(35,1,1,3000); cm.up.set(0,0,1);
+  const oc = new THREE.OrbitControls(cm, cv2); oc.enableDamping = true;
+  sc.add(new THREE.HemisphereLight(0xffffff,0x8088a0,0.85));
+  const k2 = new THREE.DirectionalLight(0xffffff,0.75); k2.position.set(80,-60,140); sc.add(k2);
+  const f2 = new THREE.DirectionalLight(0xffffff,0.35); f2.position.set(-90,90,40); sc.add(f2);
+  // print bed: plate + 10 mm grid
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(120,120,1.2), new THREE.MeshStandardMaterial({color:0x3a3f4b, roughness:0.8}));
+  bed.position.z = -0.61; sc.add(bed);
+  const grid = new THREE.GridHelper(120,12,0x8a90a2,0x5d6374); grid.rotation.x = Math.PI/2; grid.position.z = 0.01; sc.add(grid);
+  const holder = new THREE.Group(); sc.add(holder);
+  let data = null, cur = "case_base", flip = false, radius = 50;
+  const mat = new THREE.MeshStandardMaterial({color:CASE.col, roughness:0.6, side:THREE.DoubleSide});
+  const geoCache = {};
+  function geom(name){
+    if (geoCache[name]) return geoCache[name];
+    const d = data[name], g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(Float32Array.from(d.v, x=>x/100), 3));
+    g.setIndex(d.f); const g2 = g.toNonIndexed(); g2.computeVertexNormals(); return geoCache[name]=g2;
+  }
+  function fit(){
+    const a = Math.max(cv2.clientWidth,1)/Math.max(cv2.clientHeight,1);
+    const d = radius*2.3*Math.max(1, 1.25/a);
+    const zc = new THREE.Box3().setFromObject(holder).getCenter(new THREE.Vector3());
+    cm.position.set(zc.x+d*0.55, zc.y-d*0.72, zc.z+d*0.62); oc.target.copy(zc); oc.update();
+  }
+  function show(){
+    if (!data) return;
+    holder.clear();
+    const d = data[cur], n = PINFO[cur].qty, s = d.size;
+    for (let i=0;i<n;i++){
+      const m = new THREE.Mesh(geom(cur), mat);
+      const gx = (i-(n-1)/2)*(s[0]+4);
+      if (flip){ m.rotation.x = Math.PI; m.position.set(gx - s[0]/2, s[1]/2, s[2]); }
+      else m.position.set(gx - s[0]/2, -s[1]/2, 0);
+      holder.add(m);
+    }
+    radius = Math.max(s[0]*n, s[1], s[2]*2)/2 + 4;
+    fit();
+    const g = d.cm3*1.24*0.85, mins = 8 + d.cm3*5.5;
+    const t = mins>=60 ? Math.floor(mins/60)+" h "+Math.round(mins%60)+" min" : Math.round(mins)+" min";
+    const info = PINFO[cur];
+    document.getElementById("pInfo").innerHTML =
+      '<div class="facts"><span class="tag">Size <b>'+s.join(" × ")+' mm</b></span>'+
+      '<span class="tag">PLA <b>≈ '+(g*n<1?(g*n).toFixed(1):Math.round(g*n))+' g</b></span>'+
+      '<span class="tag">Time <b>≈ '+(n>1? Math.round(8+d.cm3*5.5*n)+" min" : t)+'</b></span>'+
+      '<span class="tag">Quantity <b>'+n+'</b></span><span class="tag">Supports <b>none</b></span></div>'+
+      '<p><b>On the bed:</b> '+info.place+'</p><p class="note">'+info.what+'</p>'+
+      (flip?'<p class="note"><b>Shown upside down</b> to see the other side. Print it the normal way.</p>':'');
+  }
+  document.querySelectorAll("[data-pp]").forEach(b=> b.onclick=()=>{
+    cur = b.dataset.pp; document.querySelectorAll("[data-pp]").forEach(x=>x.setAttribute("aria-pressed", String(x===b))); show(); });
+  document.getElementById("pFlip").onclick=()=>{ flip=!flip; document.getElementById("pFlip").setAttribute("aria-pressed",String(flip)); show(); };
+  document.getElementById("pReset").onclick=fit;
+  document.querySelectorAll(".swatch").forEach(b=> b.addEventListener("click", ()=> mat.color.set(b.dataset.col)));
+  function sz(){ const w=cv2.clientWidth, h=cv2.clientHeight, pr=r2.getPixelRatio();
+    if (cv2.width!==Math.round(w*pr)||cv2.height!==Math.round(h*pr)){ r2.setSize(w,h,false); cm.aspect=w/h; cm.updateProjectionMatrix(); } }
+  (function lp(){ sz(); oc.update(); r2.render(sc,cm); requestAnimationFrame(lp); })();
+  fetch("print.json").then(r=>r.json()).then(d=>{ data=d; document.getElementById("ploading").hidden=true; sz(); show(); })
+    .catch(()=>{ document.getElementById("ploading").textContent="Couldn't load the print files. Reload the page to try again."; });
+})();
 })();
 </script>
